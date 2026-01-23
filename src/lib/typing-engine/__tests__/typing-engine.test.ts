@@ -112,6 +112,7 @@ function createIdleDeadKeyState() {
     status: 'IDLE' as const,
     type: null,
     pendingChar: null,
+    timestamp: null,
   };
 }
 
@@ -779,7 +780,9 @@ describe('TypingEngine', () => {
     });
 
     it('should pause and resume correctly', () => {
-      // Arrange
+      // Arrange - Use fake timers for this test
+      vi.useFakeTimers();
+
       const activeState = {
         status: SessionStatus.ACTIVE,
         text: 'hello',
@@ -807,6 +810,9 @@ describe('TypingEngine', () => {
       expect(resumedState.status).toBe(SessionStatus.ACTIVE);
       expect(resumedState.pauseTime).toBeNull();
       expect(resumedState.totalPausedTime).toBeGreaterThan(0);
+
+      // Cleanup - restore real timers
+      vi.useRealTimers();
     });
 
     it('should calculate final metrics on completion', () => {
@@ -838,6 +844,7 @@ describe('TypingEngine', () => {
       const activeState = {
         status: SessionStatus.ACTIVE,
         text: 'hello',
+        characters: [],
         currentIndex: 2,
       };
       const action: SessionAction = { type: 'BLUR', payload: {} };
@@ -857,6 +864,7 @@ describe('TypingEngine', () => {
       const activeState = {
         status: SessionStatus.ACTIVE,
         text: 'hello',
+        characters: [],
         currentIndex: 3,
       };
       const action: SessionAction = { type: 'RESET', payload: {} };
@@ -870,7 +878,12 @@ describe('TypingEngine', () => {
 
     it('should reject invalid text (empty string)', () => {
       // Arrange
-      const idleState = { status: SessionStatus.IDLE };
+      const idleState = {
+        status: SessionStatus.IDLE,
+        text: null,
+        characters: [],
+        currentIndex: 0,
+      };
       const action: SessionAction = {
         type: 'LOAD_TEXT',
         payload: { text: '' },

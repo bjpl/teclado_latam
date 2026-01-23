@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# claude-flow working directories
+/.claude-flow/
+/.claude/
+/.hive-mind/
+/.swarm/
+/memory/
+claude-flow

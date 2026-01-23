@@ -1,26 +1,353 @@
 @import "tailwindcss";
 
+/* =============================================================================
+   Theme Variables
+   ============================================================================= */
+
 :root {
+  /* Background and foreground */
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Surface colors */
+  --surface-0: #ffffff;
+  --surface-1: #f9fafb;
+  --surface-2: #f3f4f6;
+
+  /* Accent colors */
+  --accent-primary: #3b82f6;
+  --accent-secondary: #6366f1;
+  --accent-success: #059669;
+  --accent-warning: #d97706;
+  --accent-error: #dc2626;
+
+  /* Typing practice colors */
+  --char-color-pending: #6b7280;
+  --char-color-current: #1f2937;
+  --char-color-correct: #059669;
+  --char-color-incorrect: #dc2626;
+  --char-color-corrected: #d97706;
+  --cursor-color: #3b82f6;
+
+  /* Border colors */
+  --border-default: #e5e7eb;
+  --border-muted: #f3f4f6;
 }
+
+/* Dark mode (default) */
+.dark,
+:root:has(.dark) {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+
+  /* Surface colors */
+  --surface-0: #0a0a0a;
+  --surface-1: #141414;
+  --surface-2: #1f1f1f;
+
+  /* Accent colors - adjusted for dark mode */
+  --accent-primary: #60a5fa;
+  --accent-secondary: #818cf8;
+  --accent-success: #34d399;
+  --accent-warning: #fbbf24;
+  --accent-error: #f87171;
+
+  /* Dark mode typing practice colors */
+  --char-color-pending: #6b7280;
+  --char-color-current: #f9fafb;
+  --char-color-correct: #34d399;
+  --char-color-incorrect: #f87171;
+  --char-color-corrected: #fbbf24;
+  --cursor-color: #60a5fa;
+
+  /* Border colors */
+  --border-default: #262626;
+  --border-muted: #1f1f1f;
+}
+
+/* =============================================================================
+   Tailwind Theme Integration
+   ============================================================================= */
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-accent-primary: var(--accent-primary);
+  --color-accent-secondary: var(--accent-secondary);
+  --color-accent-success: var(--accent-success);
+  --color-accent-warning: var(--accent-warning);
+  --color-accent-error: var(--accent-error);
+  --color-border-default: var(--border-default);
+  --color-border-muted: var(--border-muted);
+
+  /* Font families */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono), 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+
+  /* Custom animations */
+  --animate-cursor-blink: cursor-blink 1s step-end infinite;
+  --animate-pulse-once: pulse-once 150ms ease-out;
+  --animate-fade-in: fade-in 200ms ease-out;
+  --animate-slide-up: slide-up 200ms ease-out;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* =============================================================================
+   Base Styles
+   ============================================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark light;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Focus visible for accessibility */
+:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* =============================================================================
+   Keyboard Key Animations
+   ============================================================================= */
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+.animate-shake {
+  animation: shake 200ms ease-out;
+}
+
+/* =============================================================================
+   Typing Practice Animations
+   ============================================================================= */
+
+/* Cursor blink animation */
+@keyframes cursor-blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  50.01%, 100% {
+    opacity: 0;
+  }
+}
+
+.animate-cursor-blink {
+  animation: cursor-blink 1s step-end infinite;
+}
+
+/* Character state change animation */
+@keyframes pulse-once {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-pulse-once {
+  animation: pulse-once 150ms ease-out;
+}
+
+/* Fade in animation */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 200ms ease-out;
+}
+
+/* Slide up animation */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 200ms ease-out;
+}
+
+/* =============================================================================
+   Character State Styles
+   ============================================================================= */
+
+.char {
+  transition-property: color, background-color, text-decoration;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
+}
+
+.char--animate {
+  animation: pulse-once 150ms ease-out;
+}
+
+.char--pending {
+  color: var(--char-color-pending);
+}
+
+.char--current {
+  color: var(--char-color-current);
+  background-color: rgba(59, 130, 246, 0.2);
+  border-radius: 2px;
+}
+
+.char--correct {
+  color: var(--char-color-correct);
+}
+
+.char--incorrect {
+  color: var(--char-color-incorrect);
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+.char--corrected {
+  color: var(--char-color-corrected);
+  text-decoration: underline;
+  text-decoration-style: wavy;
+}
+
+/* Special character styles */
+.char--space {
+  opacity: 0.5;
+}
+
+.char--newline {
+  display: inline-block;
+  width: 100%;
+  color: var(--char-color-pending);
+  opacity: 0.3;
+}
+
+.char--tab {
+  opacity: 0.3;
+  margin-right: 2em;
+}
+
+.char--special {
+  font-feature-settings: "liga" 0;
+}
+
+/* =============================================================================
+   Cursor Styles
+   ============================================================================= */
+
+.cursor-indicator {
+  will-change: transform;
+  transition: transform 80ms ease-out, height 80ms ease-out;
+}
+
+/* =============================================================================
+   Text Display Styles
+   ============================================================================= */
+
+.text-display {
+  font-family: var(--font-mono);
+}
+
+.text-display::-webkit-scrollbar {
+  width: 8px;
+}
+
+.text-display::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.text-display::-webkit-scrollbar-thumb {
+  background-color: rgba(107, 114, 128, 0.3);
+  border-radius: 4px;
+}
+
+.text-display::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(107, 114, 128, 0.5);
+}
+
+.text-display:focus-within {
+  outline: 2px solid var(--cursor-color);
+  outline-offset: 2px;
+}
+
+/* =============================================================================
+   Custom Scrollbar
+   ============================================================================= */
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: var(--border-default);
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: var(--char-color-pending);
+}
+
+/* =============================================================================
+   Utility Classes
+   ============================================================================= */
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Prevent text selection during typing */
+.select-none-typing {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Monospace text */
+.font-typing {
+  font-family: var(--font-mono);
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+/* Tabular numbers for metrics */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }

@@ -59,12 +59,12 @@ const EXPECTED_MAPPINGS = {
     Digit9: { normal: '9', shift: ')', altGr: ']' },
     Digit0: { normal: '0', shift: '=', altGr: '}' },
     Minus: { normal: "'", shift: '?', altGr: '\\' },
-    Equal: { normal: '¿', shift: '¡', altGr: null },
+    Equal: { normal: '¿', shift: '¡', altGr: '¿' },
   },
 
   // Special Spanish characters
   spanish: {
-    Semicolon: { normal: 'n', shift: 'N' }, // n with tilde - direct key
+    Semicolon: { normal: '\u00F1', shift: '\u00D1' }, // ñ/Ñ (n with tilde) - direct key
     BracketLeft: { normal: '´', shift: '¨', altGr: '[', isDeadKey: true },
     Equal: { normal: '¿', shift: '¡' }, // Inverted punctuation
   },
@@ -114,7 +114,7 @@ describe('LATAMKeyboardLayout', () => {
       const result = mapUSKeyToLATAM('Semicolon', modifiers);
 
       // Assert
-      expect(result.character).toBe('n'); // n with tilde
+      expect(result.character).toBe('\u00F1'); // ñ (n with tilde)
     });
 
     it('should map Shift+Semicolon to uppercase N with tilde', () => {
@@ -125,7 +125,7 @@ describe('LATAMKeyboardLayout', () => {
       const result = mapUSKeyToLATAM('Semicolon', modifiers);
 
       // Assert
-      expect(result.character).toBe('N'); // N with tilde
+      expect(result.character).toBe('\u00D1'); // Ñ (N with tilde)
     });
 
     // =========================================================================
@@ -440,7 +440,7 @@ describe('LATAMKeyboardLayout', () => {
   describe('character lookup', () => {
     it('should find key for n with tilde character', () => {
       // Act
-      const result = findKeyForCharacter('n'); // n with tilde
+      const result = findKeyForCharacter('\u00F1'); // ñ (n with tilde)
 
       // Assert
       expect(result).not.toBeNull();
@@ -452,7 +452,7 @@ describe('LATAMKeyboardLayout', () => {
 
     it('should find key for uppercase N with tilde', () => {
       // Act
-      const result = findKeyForCharacter('N'); // N with tilde
+      const result = findKeyForCharacter('\u00D1'); // Ñ (N with tilde)
 
       // Assert
       expect(result).not.toBeNull();
