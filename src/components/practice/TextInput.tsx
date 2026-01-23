@@ -85,6 +85,12 @@ function shouldAllowDefault(event: React.KeyboardEvent): boolean {
     return true;
   }
 
+  // Allow Tab for focus navigation (but still notify handler)
+  // Note: We still call onKeyDown for Tab so the app knows about it
+  if (event.key === 'Tab') {
+    return true;
+  }
+
   return false;
 }
 
@@ -177,18 +183,27 @@ export const TextInput = forwardRef<TextInputRef, TextInputProps>(
       <textarea
         ref={inputRef}
         className="
-          sr-only
           absolute
-          w-1
-          h-1
+          left-0
+          top-0
+          w-full
+          h-full
           p-0
-          m-[-1px]
-          overflow-hidden
-          whitespace-nowrap
+          m-0
+          bg-transparent
+          text-transparent
+          caret-transparent
           border-0
-          opacity-0
-          pointer-events-auto
+          outline-none
+          resize-none
+          cursor-default
+          z-10
         "
+        style={{
+          // Make truly invisible but still focusable
+          color: 'transparent',
+          caretColor: 'transparent',
+        }}
         tabIndex={0}
         disabled={disabled}
         autoComplete="off"

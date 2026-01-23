@@ -447,13 +447,12 @@ export function PracticeArea({
                 dark:bg-black/50
                 backdrop-blur-[2px]
                 rounded-lg
-                cursor-pointer
+                pointer-events-none
                 transition-opacity
               "
-              onClick={() => inputRef.current?.focus()}
             >
               <p className="text-white text-lg font-medium">
-                Click here or press Tab to start typing
+                Click anywhere or press Tab to start typing
               </p>
             </div>
           )}
@@ -471,12 +470,11 @@ export function PracticeArea({
                 dark:bg-black/50
                 backdrop-blur-[2px]
                 rounded-lg
-                cursor-pointer
+                pointer-events-none
               "
-              onClick={handleResume}
             >
               <p className="text-white text-lg font-medium">
-                Paused - Click here or press any key to resume
+                Paused - Click anywhere or press any key to resume
               </p>
             </div>
           )}
