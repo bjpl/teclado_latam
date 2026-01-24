@@ -32,6 +32,7 @@ import type {
   KeyboardEvent as TypingKeyboardEvent,
   DeadKeyState,
 } from '@/lib/typing-engine/types';
+import { useDeadKeys } from '@/hooks/useDeadKeys';
 
 // =============================================================================
 // Types
@@ -180,10 +181,16 @@ export function PracticeArea({
   const [session, setSession] = useState<SessionState | null>(
     initialText ? createSession(initialText) : null
   );
-  const [deadKeyState, setDeadKeyState] =
-    useState<DeadKeyState>(initialDeadKeyState);
   const [previousStates, setPreviousStates] = useState<CharacterState[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+
+  // Dead key handling via hook (fixes stale closure issue with useRef internally)
+  const {
+    processRawKey,
+    isPending: deadKeyPending,
+    pendingChar: deadKeyPendingChar,
+    reset: resetDeadKeys,
+  } = useDeadKeys();
 
   // Refs
   const inputRef = useRef<TextInputRef>(null);
@@ -263,8 +270,12 @@ export function PracticeArea({
       // Mark typing as active
       markTypingActive();
 
-      // Handle Escape - pause session
+      // Handle Escape - pause session or cancel dead key
       if (event.code === 'Escape') {
+        if (deadKeyPending) {
+          resetDeadKeys();
+          return;
+        }
         if (session.isStarted && !session.isPaused) {
           setSession((prev) =>
             prev
@@ -282,38 +293,61 @@ export function PracticeArea({
       // Don't process input if paused
       if (session.isPaused) return;
 
-      // Handle backspace
+      // Handle backspace - also cancels pending dead key
       if (event.code === 'Backspace') {
+        if (deadKeyPending) {
+          resetDeadKeys();
+          return;
+        }
         const { updatedState } = processBackspace(session);
         setSession(updatedState);
         return;
       }
 
-      // Process regular keystroke
+      // Extract modifiers from event
+      const modifiers = {
+        shift: event.shiftKey ?? false,
+        altGr: event.altKey ?? false,
+        ctrl: event.ctrlKey ?? false,
+        meta: event.metaKey ?? false,
+      };
+
+      // Process through dead key handler first
+      // This uses useRef internally to avoid stale closure issues
+      const deadKeyResult = processRawKey(event.code, event.key, modifiers);
+
+      // If consumed by dead key but no output yet, wait for base character
+      if (deadKeyResult.consumed && !deadKeyResult.outputChar) {
+        return;
+      }
+
+      // Get the character to process (composed character or original key)
+      const charToProcess = deadKeyResult.outputChar ?? event.key;
+
+      // Skip non-printable characters (except space)
+      if (charToProcess.length !== 1 && charToProcess !== ' ') {
+        return;
+      }
+
+      // Create typing event with the composed character
+      const typingEvent: TypingKeyboardEvent = {
+        ...event,
+        key: charToProcess,
+      };
+
+      // Process keystroke with composed character
       const { updatedState, feedback } = processKeystroke(
-        event,
+        typingEvent,
         session,
-        deadKeyState,
+        initialDeadKeyState, // Dead key already handled above
         mockKeyboardMapper
       );
 
       if (feedback.accepted) {
         setSession(updatedState);
-
-        // Handle dead key state updates if needed
-        if (feedback.deadKeyPending) {
-          setDeadKeyState({
-            status: 'AWAITING_BASE',
-            type: null,
-            pendingChar: event.key,
-            timestamp: event.timestamp,
-          });
-        } else {
-          setDeadKeyState(initialDeadKeyState);
-        }
       }
     },
-    [session, deadKeyState, markTypingActive]
+    [session, deadKeyPending, markTypingActive, processRawKey, resetDeadKeys]
   );
 
   // ==========================================================================
@@ -324,13 +358,13 @@ export function PracticeArea({
     const newSession = createSession(text);
     setSession(newSession);
     setPreviousStates([]);
-    setDeadKeyState(initialDeadKeyState);
+    resetDeadKeys();
 
     // Focus input after loading
     setTimeout(() => {
       inputRef.current?.focus();
     }, 100);
-  }, []);
+  }, [resetDeadKeys]);
 
   const handleStart = useCallback(() => {
     inputRef.current?.focus();
@@ -370,11 +404,11 @@ export function PracticeArea({
       const newSession = createSession(session.text);
       setSession(newSession);
       setPreviousStates([]);
-      setDeadKeyState(initialDeadKeyState);
+      resetDeadKeys();
     } else {
       setSession(null);
     }
-  }, [session?.text]);
+  }, [session?.text, resetDeadKeys]);
 
   const handleFocus = useCallback(() => {
     // Resume if paused when re-focused
