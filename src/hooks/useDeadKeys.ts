@@ -112,8 +112,8 @@ export function useDeadKeys(): UseDeadKeysReturn {
    */
   const processRawKey = useCallback(
     (code: string, char: string, modifiers: ModifierState): DeadKeyProcessResult => {
-      // Check if this key is a dead key
-      const deadKeyInfo = isDeadKeyCode(code, modifiers);
+      // Check if this key is a dead key (now also checks the char/key value)
+      const deadKeyInfo = isDeadKeyCode(code, modifiers, char);
 
       // Process through the state machine
       const result: DeadKeyResult = handleDeadKey(

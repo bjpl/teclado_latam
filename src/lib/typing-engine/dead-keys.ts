@@ -236,6 +236,18 @@ export function handleDeadKey(
       };
     }
 
+    // Check if the OS already composed the character (Windows Spanish keyboard behavior)
+    // If the incoming char is already an accented character that would result from our pending dead key,
+    // accept it directly instead of trying to compose again
+    if (isAlreadyComposedWith(char, pendingType)) {
+      return {
+        newState: createIdleState(),
+        outputChar: char,
+        consumed: true,
+        wasComposition: true,
+      };
+    }
+
     // Try to compose
     const composed = composeWithDeadKey(pendingType, char);
     if (composed) {
@@ -282,22 +294,52 @@ function createIdleState(): DeadKeyState {
 /**
  * Check if a key code represents a dead key
  *
- * TODO: Implement dead key detection for LATAM layout:
- * - BracketLeft (no modifiers) = acute
- * - Shift+BracketLeft = dieresis
- * - AltGr+BracketLeft = NOT a dead key (produces '[')
+ * Detects dead keys via:
+ * - Physical key code (BracketLeft on LATAM layout)
+ * - Browser's key value (Dead, ´, ¨, etc.)
  *
  * @param code - Physical key code
  * @param modifiers - Current modifier state
+ * @param key - The key value from the browser (optional, for Dead key detection)
  * @returns Whether this is a dead key and its type
  */
 export function isDeadKeyCode(
   code: string,
-  modifiers: ModifierState
+  modifiers: ModifierState,
+  key?: string
 ): { isDeadKey: boolean; deadKeyType: DeadKeyType | null } {
-  // TODO: Implement proper dead key detection for LATAM layout
+  // Check if browser explicitly signals this is a dead key
+  if (key === 'Dead') {
+    // Try to infer the type from the physical key code
+    // On Windows Spanish keyboard, the acute accent is typically on the Quote key
+    if (code === 'Quote' || code === 'BracketLeft') {
+      if (modifiers.shift) {
+        return { isDeadKey: true, deadKeyType: 'dieresis' };
+      }
+      return { isDeadKey: true, deadKeyType: 'acute' };
+    }
+    // Default to acute if we can't determine the type
+    return { isDeadKey: true, deadKeyType: 'acute' };
+  }
 
-  // BracketLeft is the dead key position on LATAM keyboard
+  // Check for dead key visual characters (when browser reports the accent character directly)
+  if (key === '\u00B4' || key === '´') {
+    return { isDeadKey: true, deadKeyType: 'acute' };
+  }
+  if (key === '\u00A8' || key === '¨') {
+    return { isDeadKey: true, deadKeyType: 'dieresis' };
+  }
+  if (key === '`' || key === '\u0060') {
+    return { isDeadKey: true, deadKeyType: 'grave' };
+  }
+  if (key === '^' || key === '\u005E') {
+    return { isDeadKey: true, deadKeyType: 'circumflex' };
+  }
+  if (key === '~' || key === '\u007E') {
+    return { isDeadKey: true, deadKeyType: 'tilde' };
+  }
+
+  // BracketLeft is the dead key position on LATAM keyboard (US physical layout)
   if (code === 'BracketLeft') {
     // AltGr produces '[', not a dead key
     if (modifiers.altGr) {
@@ -320,6 +362,25 @@ export function isDeadKeyCode(
 // =============================================================================
 // Composition
 // =============================================================================
+
+/**
+ * Reverse lookup: check if a character is a composed form of a given dead key type
+ * This handles the case where the OS has already composed the character
+ * (e.g., Windows Spanish keyboard produces 'á' directly)
+ *
+ * @param char - Character to check
+ * @param deadKeyType - Dead key type to check against
+ * @returns True if char is a composed form of the dead key type
+ */
+function isAlreadyComposedWith(char: string, deadKeyType: DeadKeyType): boolean {
+  const typeCompositions = COMPOSITIONS[deadKeyType];
+  if (!typeCompositions) {
+    return false;
+  }
+
+  // Check if this char is in the composition output values
+  return Object.values(typeCompositions).includes(char);
+}
 
 /**
  * Compose a dead key with a base character
