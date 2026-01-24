@@ -295,8 +295,13 @@ function createIdleState(): DeadKeyState {
  * Check if a key code represents a dead key
  *
  * Detects dead keys via:
- * - Physical key code (BracketLeft on LATAM layout)
- * - Browser's key value (Dead, ´, ¨, etc.)
+ * - Browser's key value ("Dead" signal or accent character)
+ * - Physical key codes as fallback for LATAM layout
+ *
+ * When Windows Spanish LATAM layout is enabled on a US physical keyboard:
+ * - The browser reports event.key = "Dead" for dead key presses
+ * - Physical key positions may vary (Quote, BracketLeft, BracketRight)
+ * - We trust the "Dead" signal as primary detection method
  *
  * @param code - Physical key code
  * @param modifiers - Current modifier state
@@ -308,21 +313,36 @@ export function isDeadKeyCode(
   modifiers: ModifierState,
   key?: string
 ): { isDeadKey: boolean; deadKeyType: DeadKeyType | null } {
-  // Check if browser explicitly signals this is a dead key
+  // PRIMARY: Check if browser explicitly signals this is a dead key
+  // This is the most reliable method as it works regardless of physical keyboard
   if (key === 'Dead') {
-    // Try to infer the type from the physical key code
-    // On Windows Spanish keyboard, the acute accent is typically on the Quote key
-    if (code === 'Quote' || code === 'BracketLeft') {
+    // Infer dead key type from physical code and modifiers
+    // On Spanish LATAM, dead keys can be at Quote, BracketLeft, or BracketRight
+    const deadKeyPositions = ['Quote', 'BracketLeft', 'BracketRight'];
+
+    if (deadKeyPositions.includes(code)) {
+      // Shift typically changes acute to dieresis on Spanish layouts
       if (modifiers.shift) {
         return { isDeadKey: true, deadKeyType: 'dieresis' };
       }
       return { isDeadKey: true, deadKeyType: 'acute' };
     }
-    // Default to acute if we can't determine the type
+
+    // Check for other dead key positions (grave, circumflex, tilde)
+    // IntlBackslash or Backquote positions may have grave accent
+    if (code === 'Backquote' || code === 'IntlBackslash') {
+      if (modifiers.shift) {
+        return { isDeadKey: true, deadKeyType: 'circumflex' };
+      }
+      return { isDeadKey: true, deadKeyType: 'grave' };
+    }
+
+    // Default to acute if we can't determine - most common in Spanish
     return { isDeadKey: true, deadKeyType: 'acute' };
   }
 
-  // Check for dead key visual characters (when browser reports the accent character directly)
+  // SECONDARY: Check for dead key visual characters
+  // (when browser reports the accent character directly instead of "Dead")
   if (key === '\u00B4' || key === '´') {
     return { isDeadKey: true, deadKeyType: 'acute' };
   }
@@ -339,23 +359,27 @@ export function isDeadKeyCode(
     return { isDeadKey: true, deadKeyType: 'tilde' };
   }
 
-  // BracketLeft is the dead key position on LATAM keyboard (US physical layout)
-  if (code === 'BracketLeft') {
-    // AltGr produces '[', not a dead key
-    if (modifiers.altGr) {
-      return { isDeadKey: false, deadKeyType: null };
-    }
+  // TERTIARY: Physical key code fallback for LATAM layout
+  // Only use when key value is not available
+  if (!key || key === 'Unidentified') {
+    // BracketLeft is dead key position on physical LATAM keyboard
+    if (code === 'BracketLeft') {
+      // AltGr produces '[', not a dead key
+      if (modifiers.altGr) {
+        return { isDeadKey: false, deadKeyType: null };
+      }
 
-    // Shift+BracketLeft = dieresis
-    if (modifiers.shift) {
-      return { isDeadKey: true, deadKeyType: 'dieresis' };
-    }
+      // Shift+BracketLeft = dieresis
+      if (modifiers.shift) {
+        return { isDeadKey: true, deadKeyType: 'dieresis' };
+      }
 
-    // BracketLeft alone = acute
-    return { isDeadKey: true, deadKeyType: 'acute' };
+      // BracketLeft alone = acute
+      return { isDeadKey: true, deadKeyType: 'acute' };
+    }
   }
 
-  // Other keys are not dead keys
+  // Not a dead key
   return { isDeadKey: false, deadKeyType: null };
 }
 
