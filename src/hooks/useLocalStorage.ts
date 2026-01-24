@@ -149,6 +149,7 @@ export const STORAGE_KEYS = {
   THEME: 'teclado-theme',
   SESSION_HISTORY: 'teclado-session-history',
   CURRENT_SESSION: 'teclado-current-session',
+  CUSTOM_TEXTS: 'teclado-custom-texts',
 } as const;
 
 export type StorageKey = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS];

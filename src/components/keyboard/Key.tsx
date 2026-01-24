@@ -39,33 +39,33 @@ export interface KeyProps {
 
 /**
  * Color mapping for finger positions
- * Using a colorblind-friendly palette
+ * Using a colorblind-friendly palette with 30% opacity for visibility
  */
 const FINGER_COLORS: Record<Finger, string> = {
-  'left-pinky': 'bg-purple-500/20',
-  'left-ring': 'bg-blue-500/20',
-  'left-middle': 'bg-emerald-500/20',
-  'left-index': 'bg-amber-500/20',
-  'right-index': 'bg-amber-500/20',
-  'right-middle': 'bg-emerald-500/20',
-  'right-ring': 'bg-blue-500/20',
-  'right-pinky': 'bg-purple-500/20',
-  'thumb': 'bg-gray-500/20',
+  'left-pinky': 'bg-purple-500/30',
+  'left-ring': 'bg-blue-500/30',
+  'left-middle': 'bg-emerald-500/30',
+  'left-index': 'bg-amber-500/30',
+  'right-index': 'bg-amber-500/30',
+  'right-middle': 'bg-emerald-500/30',
+  'right-ring': 'bg-blue-500/30',
+  'right-pinky': 'bg-purple-500/30',
+  'thumb': 'bg-gray-500/30',
 };
 
 /**
  * Border colors for finger positions (for finger guide)
  */
 const FINGER_BORDER_COLORS: Record<Finger, string> = {
-  'left-pinky': 'border-purple-500/50',
-  'left-ring': 'border-blue-500/50',
-  'left-middle': 'border-emerald-500/50',
-  'left-index': 'border-amber-500/50',
-  'right-index': 'border-amber-500/50',
-  'right-middle': 'border-emerald-500/50',
-  'right-ring': 'border-blue-500/50',
-  'right-pinky': 'border-purple-500/50',
-  'thumb': 'border-gray-500/50',
+  'left-pinky': 'border-purple-500/60',
+  'left-ring': 'border-blue-500/60',
+  'left-middle': 'border-emerald-500/60',
+  'left-index': 'border-amber-500/60',
+  'right-index': 'border-amber-500/60',
+  'right-middle': 'border-emerald-500/60',
+  'right-ring': 'border-blue-500/60',
+  'right-pinky': 'border-purple-500/60',
+  'thumb': 'border-gray-500/60',
 };
 
 /**
@@ -146,12 +146,10 @@ export const Key = memo(function Key({
       'rounded-md border select-none',
       'transition-all duration-100 ease-out',
 
-      // Default background
-      'bg-neutral-800 border-neutral-700',
-
-      // Finger color coding (subtle background)
-      showFingerColors && FINGER_COLORS[finger],
-      showFingerColors && FINGER_BORDER_COLORS[finger],
+      // Background: Use finger colors when enabled, otherwise default
+      showFingerColors ? FINGER_COLORS[finger] : 'bg-neutral-800',
+      // Border: Use finger border colors when enabled, otherwise default
+      showFingerColors ? FINGER_BORDER_COLORS[finger] : 'border-neutral-700',
 
       // Home row indicator (subtle bump on F and J)
       isHomeRow && (code === 'KeyF' || code === 'KeyJ') && 'after:absolute after:bottom-1.5 after:left-1/2 after:-translate-x-1/2 after:w-2 after:h-0.5 after:bg-neutral-500 after:rounded-full',

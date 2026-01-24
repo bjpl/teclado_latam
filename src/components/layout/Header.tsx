@@ -4,6 +4,7 @@
  *
  * Features:
  * - App title with keyboard icon
+ * - Navigation to history page
  * - Settings button
  * - Theme toggle (future)
  * - Minimal, clean design inspired by Monkeytype
@@ -11,7 +12,9 @@
 
 'use client';
 
-import { Settings, Keyboard } from 'lucide-react';
+import Link from 'next/link';
+import { Settings, Keyboard, History } from 'lucide-react';
+import { useSessionHistory } from '@/hooks';
 
 export interface HeaderProps {
   /** Callback when settings button is clicked */
@@ -26,6 +29,8 @@ export interface HeaderProps {
  * Clean, minimal design that stays out of the way during typing practice.
  */
 export function Header({ onSettingsClick, className = '' }: HeaderProps) {
+  const { statistics, isLoaded } = useSessionHistory();
+
   return (
     <header
       className={`
@@ -65,6 +70,33 @@ export function Header({ onSettingsClick, className = '' }: HeaderProps) {
 
       {/* Actions */}
       <div className="flex items-center gap-2">
+        {/* History Link with Quick Stats */}
+        <Link
+          href="/history"
+          className="
+            flex items-center gap-2
+            px-3 py-2
+            rounded-lg
+            text-foreground/60
+            hover:text-foreground
+            hover:bg-surface-2
+            transition-colors
+            focus:outline-none
+            focus-visible:ring-2
+            focus-visible:ring-accent-primary
+          "
+          aria-label="View session history"
+        >
+          <History className="w-5 h-5" />
+          {isLoaded && statistics.totalSessions > 0 && (
+            <span className="hidden sm:flex items-center gap-2 text-sm">
+              <span className="text-foreground/50">{statistics.totalSessions} sessions</span>
+              <span className="text-foreground/30">|</span>
+              <span className="text-accent-primary font-medium">{statistics.averageWpm} avg</span>
+            </span>
+          )}
+        </Link>
+
         {/* Settings Button */}
         <button
           onClick={onSettingsClick}

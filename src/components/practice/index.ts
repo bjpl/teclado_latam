@@ -9,6 +9,9 @@
  * - TextInput: Hidden input for keyboard capture
  * - SessionControls: Control buttons and text input
  * - PracticeArea: Main container combining all components
+ * - SavedTextsList: List of user-saved practice texts
+ * - TextInputModal: Modal for entering custom practice text
+ * - TextSelector: Component for selecting practice text from multiple sources
  */
 
 // Core display components
@@ -40,3 +43,24 @@ export {
   type PracticeAreaProps,
   type SessionMetrics,
 } from './PracticeArea';
+
+// Saved texts list
+export {
+  SavedTextsList,
+  type SavedTextsListProps,
+} from './SavedTextsList';
+
+// Custom text input components
+export {
+  TextInputModal,
+  type TextInputModalProps,
+  type SaveOption,
+} from './TextInputModal';
+
+export {
+  TextSelector,
+  type TextSelectorProps,
+  type TextSelectorTab,
+  type SampleText,
+  type SavedText,
+} from './TextSelector';

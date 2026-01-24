@@ -66,3 +66,16 @@ export {
 
 // Settings management
 export { useSettings } from './useSettings';
+
+// Custom texts management
+export {
+  useCustomTexts,
+  type UseCustomTextsReturn,
+} from './useCustomTexts';
+
+// Curriculum progress
+export {
+  useCurriculumProgress,
+  type LessonScore,
+  type UseCurriculumProgressReturn,
+} from './useCurriculumProgress';
