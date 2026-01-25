@@ -294,13 +294,16 @@ function createIdleState(): DeadKeyState {
 /**
  * Check if a key code represents a dead key
  *
- * For LATAM keyboard layout, dead keys are detected via:
- * 1. Physical key position (BracketLeft = acute/dieresis on LATAM)
+ * LATAM Keyboard Layout Dead Keys (from kbdlayout.info/KBDLA):
+ * - Scancode 1A (BracketLeft/VK_OEM_1): base = acute (´), shift = dieresis (¨)
+ * - Scancode 1B (BracketRight/VK_OEM_PLUS) + AltGr: tilde (~)
+ * - Scancode 28 (Quote/VK_OEM_7) + AltGr: circumflex (^)
+ * - Scancode 2B (Backslash/VK_OEM_2) + AltGr: grave (`)
+ *
+ * Detection priority:
+ * 1. Physical key position + modifiers (most reliable for LATAM)
  * 2. Browser's key value ("Dead" signal)
  * 3. Accent character values (´, ¨, `, ^, ~)
- *
- * This approach ensures dead key detection works regardless of OS/browser
- * behavior, which is essential for a LATAM typing practice application.
  *
  * @param code - Physical key code (e.g., "BracketLeft")
  * @param modifiers - Current modifier state
@@ -313,13 +316,13 @@ export function isDeadKeyCode(
   key?: string
 ): { isDeadKey: boolean; deadKeyType: DeadKeyType | null } {
   // ==========================================================================
-  // LATAM PHYSICAL KEY POSITIONS (Primary detection for this app)
-  // On LATAM layout, BracketLeft is the dead key for acute/dieresis
-  // This works regardless of what the browser reports for event.key
+  // LATAM PHYSICAL KEY POSITIONS (Primary detection)
+  // Based on kbdlayout.info/KBDLA scancodes and virtual keys
   // ==========================================================================
 
+  // Scancode 1A (BracketLeft / VK_OEM_1): acute and dieresis
   if (code === 'BracketLeft') {
-    // AltGr+BracketLeft produces '[' - NOT a dead key
+    // AltGr+BracketLeft produces '[' on LATAM - NOT a dead key
     if (modifiers.altGr) {
       return { isDeadKey: false, deadKeyType: null };
     }
@@ -333,29 +336,48 @@ export function isDeadKeyCode(
     return { isDeadKey: true, deadKeyType: 'acute' };
   }
 
+  // Scancode 1B (BracketRight / VK_OEM_PLUS) + AltGr: tilde (~)
+  if (code === 'BracketRight' && modifiers.altGr) {
+    return { isDeadKey: true, deadKeyType: 'tilde' };
+  }
+
+  // Scancode 28 (Quote / VK_OEM_7) + AltGr: circumflex (^)
+  if (code === 'Quote' && modifiers.altGr) {
+    return { isDeadKey: true, deadKeyType: 'circumflex' };
+  }
+
+  // Scancode 2B (Backslash / VK_OEM_2) + AltGr: grave (`)
+  if (code === 'Backslash' && modifiers.altGr) {
+    return { isDeadKey: true, deadKeyType: 'grave' };
+  }
+
   // ==========================================================================
   // BROWSER "Dead" KEY SIGNAL
   // Trust the browser when it explicitly signals a dead key
   // ==========================================================================
 
   if (key === 'Dead') {
-    // Infer type from physical position
-    if (code === 'Quote' || code === 'BracketRight') {
+    // Infer type from physical position for LATAM layout
+    if (code === 'BracketLeft') {
       if (modifiers.shift) {
         return { isDeadKey: true, deadKeyType: 'dieresis' };
       }
       return { isDeadKey: true, deadKeyType: 'acute' };
     }
 
-    // Grave/circumflex positions
-    if (code === 'Backquote' || code === 'IntlBackslash') {
-      if (modifiers.shift) {
-        return { isDeadKey: true, deadKeyType: 'circumflex' };
-      }
+    if (code === 'BracketRight') {
+      return { isDeadKey: true, deadKeyType: 'tilde' };
+    }
+
+    if (code === 'Quote') {
+      return { isDeadKey: true, deadKeyType: 'circumflex' };
+    }
+
+    if (code === 'Backslash') {
       return { isDeadKey: true, deadKeyType: 'grave' };
     }
 
-    // Default to acute for unknown positions
+    // Default to acute for unknown positions (most common in Spanish)
     return { isDeadKey: true, deadKeyType: 'acute' };
   }
 
