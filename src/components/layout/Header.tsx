@@ -40,7 +40,8 @@ export function Header({ className = '' }: HeaderProps) {
         bg-surface-0/80
         backdrop-blur-sm
         relative
-        z-20
+        z-50
+        isolate
         ${className}
       `}
     >
@@ -69,7 +70,7 @@ export function Header({ className = '' }: HeaderProps) {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 pointer-events-auto">
         {/* Curriculum Link */}
         <Link
           href="/curriculum"
@@ -84,6 +85,8 @@ export function Header({ className = '' }: HeaderProps) {
             focus:outline-none
             focus-visible:ring-2
             focus-visible:ring-accent-primary
+            pointer-events-auto
+            cursor-pointer
           "
           aria-label="View curriculum"
         >
@@ -105,6 +108,8 @@ export function Header({ className = '' }: HeaderProps) {
             focus:outline-none
             focus-visible:ring-2
             focus-visible:ring-accent-primary
+            pointer-events-auto
+            cursor-pointer
           "
           aria-label="View session history"
         >
@@ -131,6 +136,8 @@ export function Header({ className = '' }: HeaderProps) {
             focus:outline-none
             focus-visible:ring-2
             focus-visible:ring-accent-primary
+            pointer-events-auto
+            cursor-pointer
           "
           aria-label="Open settings"
         >
