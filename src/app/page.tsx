@@ -39,7 +39,6 @@ export default function Home() {
   const [showTextSelector, setShowTextSelector] = useState(true);
   const [sessionMetrics, setSessionMetrics] = useState<SessionMetrics | null>(null);
   const [completedSession, setCompletedSession] = useState<SessionState | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
   const [modifierState, setModifierState] = useState<ModifierState>({
@@ -162,13 +161,6 @@ export default function Home() {
     mainRef.current?.focus();
   }, []);
 
-  const handleSettingsClick = useCallback(() => {
-    setShowSettings(true);
-  }, []);
-
-  const handleCloseSettings = useCallback(() => {
-    setShowSettings(false);
-  }, []);
 
   // Handle text selection from TextSelector
   const handleSelectText = useCallback((text: string) => {
@@ -204,7 +196,7 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
-      <Header onSettingsClick={handleSettingsClick} />
+      <Header />
 
       {/* Main Content */}
       <main
@@ -288,28 +280,6 @@ export default function Home() {
 
       {/* Footer */}
       <Footer />
-
-      {/* Settings Modal */}
-      <Modal
-        isOpen={showSettings}
-        onClose={handleCloseSettings}
-        title="Settings"
-        description="Configure your typing practice"
-        size="md"
-      >
-        <div className="space-y-4">
-          <p className="text-foreground/60">
-            Settings panel coming soon. You will be able to configure:
-          </p>
-          <ul className="list-disc list-inside text-foreground/60 space-y-1">
-            <li>Practice text sources</li>
-            <li>Keyboard layout options</li>
-            <li>Display preferences</li>
-            <li>Sound effects</li>
-            <li>Statistics tracking</li>
-          </ul>
-        </div>
-      </Modal>
 
       {/* Results Modal */}
       <Modal

@@ -13,12 +13,10 @@
 'use client';
 
 import Link from 'next/link';
-import { Settings, Keyboard, History } from 'lucide-react';
+import { Settings, Keyboard, History, BookOpen } from 'lucide-react';
 import { useSessionHistory } from '@/hooks';
 
 export interface HeaderProps {
-  /** Callback when settings button is clicked */
-  onSettingsClick?: () => void;
   /** Additional CSS classes */
   className?: string;
 }
@@ -28,7 +26,7 @@ export interface HeaderProps {
  *
  * Clean, minimal design that stays out of the way during typing practice.
  */
-export function Header({ onSettingsClick, className = '' }: HeaderProps) {
+export function Header({ className = '' }: HeaderProps) {
   const { statistics, isLoaded } = useSessionHistory();
 
   return (
@@ -70,6 +68,27 @@ export function Header({ onSettingsClick, className = '' }: HeaderProps) {
 
       {/* Actions */}
       <div className="flex items-center gap-2">
+        {/* Curriculum Link */}
+        <Link
+          href="/curriculum"
+          className="
+            flex items-center gap-2
+            px-3 py-2
+            rounded-lg
+            text-foreground/60
+            hover:text-foreground
+            hover:bg-surface-2
+            transition-colors
+            focus:outline-none
+            focus-visible:ring-2
+            focus-visible:ring-accent-primary
+          "
+          aria-label="View curriculum"
+        >
+          <BookOpen className="w-5 h-5" />
+          <span className="hidden sm:inline text-sm">Curriculum</span>
+        </Link>
+
         {/* History Link with Quick Stats */}
         <Link
           href="/history"
@@ -97,9 +116,9 @@ export function Header({ onSettingsClick, className = '' }: HeaderProps) {
           )}
         </Link>
 
-        {/* Settings Button */}
-        <button
-          onClick={onSettingsClick}
+        {/* Settings Link */}
+        <Link
+          href="/settings"
           className="
             p-2.5
             rounded-lg
@@ -114,7 +133,7 @@ export function Header({ onSettingsClick, className = '' }: HeaderProps) {
           aria-label="Open settings"
         >
           <Settings className="w-5 h-5" />
-        </button>
+        </Link>
       </div>
     </header>
   );

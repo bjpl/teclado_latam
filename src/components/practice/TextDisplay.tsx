@@ -27,6 +27,7 @@ export interface CharacterRenderData {
   index: number;
   state: CharacterState;
   shouldAnimate: boolean;
+  actualTyped?: string | null;
 }
 
 export interface TextDisplayProps {
@@ -115,6 +116,7 @@ function generateRenderData(
       index: i,
       state,
       shouldAnimate,
+      actualTyped: errorMap.get(i) ?? null,
     });
   }
 
@@ -259,6 +261,7 @@ function TextDisplayComponent({
             index={data.index}
             state={data.state}
             shouldAnimate={data.shouldAnimate}
+            actualTyped={data.actualTyped}
           />
         ))}
       </div>

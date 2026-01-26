@@ -30,13 +30,9 @@ export default function CurriculumPage() {
     router.push(`/?lessonId=${encodeURIComponent(lesson.id)}`);
   };
 
-  const handleSettingsClick = () => {
-    router.push('/settings');
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Header onSettingsClick={handleSettingsClick} />
+      <Header />
 
       <main className="flex-1 container mx-auto px-4 py-6 max-w-5xl">
         {/* Page Header */}

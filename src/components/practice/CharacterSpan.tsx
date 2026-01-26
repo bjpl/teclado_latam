@@ -26,6 +26,8 @@ export interface CharacterSpanProps {
   index: number;
   /** Current state of the character */
   state: CharacterState;
+  /** The actual character typed (for showing errors) */
+  actualTyped?: string | null;
   /** Whether to animate state transition */
   shouldAnimate?: boolean;
   /** Accessible label for screen readers */
@@ -141,6 +143,7 @@ function CharacterSpanComponent({
   char,
   index,
   state,
+  actualTyped,
   shouldAnimate = false,
   ariaLabel,
 }: CharacterSpanProps) {
@@ -150,15 +153,27 @@ function CharacterSpanComponent({
   const animateClass = shouldAnimate ? 'char--animate animate-pulse-once' : '';
   const computedAriaLabel = ariaLabel || generateAriaLabel(char, state);
 
+  // Show what was actually typed for incorrect characters
+  const showMistyped = state === 'incorrect' && actualTyped && actualTyped !== char;
+  const mistypedDisplay = actualTyped === ' ' ? '␣' : actualTyped;
+
   return (
     <span
       id={`char-${index}`}
-      className={`char inline-block transition-colors duration-150 ease-out ${stateClass} ${specialClass} ${animateClass}`}
+      className={`char inline-block transition-colors duration-150 ease-out relative ${stateClass} ${specialClass} ${animateClass}`}
       aria-label={computedAriaLabel}
       data-index={index}
       data-state={state}
     >
       {displayChar}
+      {showMistyped && (
+        <span
+          className="absolute -top-3 left-1/2 -translate-x-1/2 text-[0.6rem] font-bold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/40 px-0.5 rounded opacity-80"
+          aria-hidden="true"
+        >
+          {mistypedDisplay}
+        </span>
+      )}
     </span>
   );
 }
