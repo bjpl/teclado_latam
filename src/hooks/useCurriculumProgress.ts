@@ -140,17 +140,18 @@ export function useCurriculumProgress(): UseCurriculumProgressReturn {
 
       const stars = calculateStars(wpm, accuracy);
       const existingProgress = storedProgress.lessons[lessonId];
-      const isNewCompletion = !existingProgress?.completed && stars >= 1;
+      // Always mark as completed when user finishes the lesson - stars are for achievement display only
+      const isNewCompletion = !existingProgress?.completed;
 
       const updatedLessonProgress: LessonProgress = {
         lessonId,
         unlocked: true,
-        completed: existingProgress?.completed || stars >= 1,
+        completed: true, // Always mark completed when lesson is finished
         attempts: (existingProgress?.attempts || 0) + 1,
         bestWPM: Math.max(existingProgress?.bestWPM || 0, wpm),
         bestAccuracy: Math.max(existingProgress?.bestAccuracy || 0, accuracy),
         lastAttempt: Date.now(),
-        completedAt: existingProgress?.completedAt || (stars >= 1 ? Date.now() : null),
+        completedAt: existingProgress?.completedAt || Date.now(),
         stars: Math.max(existingProgress?.stars || 0, stars),
       };
 

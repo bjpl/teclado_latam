@@ -142,67 +142,66 @@ function HomeContent() {
     }
   }, [sessionStartTime]);
 
-  const handleSessionComplete = useCallback((session: SessionState) => {
+  const handleSessionComplete = useCallback((session: SessionState, finalMetrics: SessionMetrics) => {
     setCompletedSession(session);
+    setSessionMetrics(finalMetrics); // Store for modal display
     setShowResults(true);
 
-    // Save session to history
-    if (sessionMetrics) {
-      const now = Date.now();
-      const startTime = sessionStartTime ?? (now - sessionMetrics.elapsedTime);
-      const currentWpm = sessionMetrics.estimatedWPM;
+    // Use passed metrics directly (reliable) instead of state (race condition prone)
+    const now = Date.now();
+    const startTime = sessionStartTime ?? (now - finalMetrics.elapsedTime);
+    const currentWpm = finalMetrics.estimatedWPM;
 
-      // Check if this is a new personal best
-      const newBest = currentWpm > previousBestWpm;
-      setIsNewPersonalBest(newBest);
+    // Check if this is a new personal best
+    const newBest = currentWpm > previousBestWpm;
+    setIsNewPersonalBest(newBest);
 
-      // Get problematic characters (characters that were typed incorrectly)
-      const problematicChars = session.characters
-        .filter((c) => c.state === 'incorrect' || c.state === 'corrected')
-        .map((c) => c.expected)
-        .filter((char, idx, arr) => arr.indexOf(char) === idx); // unique
+    // Get problematic characters (characters that were typed incorrectly)
+    const problematicChars = session.characters
+      .filter((c) => c.state === 'incorrect' || c.state === 'corrected')
+      .map((c) => c.expected)
+      .filter((char, idx, arr) => arr.indexOf(char) === idx); // unique
 
-      addSession({
-        startTime,
-        endTime: now,
-        duration: sessionMetrics.elapsedTime,
-        text: session.text,
-        textLength: session.text.length,
-        wpm: {
-          grossWPM: sessionMetrics.estimatedWPM,
-          netWPM: sessionMetrics.estimatedWPM,
-          cpm: Math.round((sessionMetrics.correctCharacters / (sessionMetrics.elapsedTime / 60000))),
-        },
-        accuracy: sessionMetrics.accuracy,
-        errors: sessionMetrics.errors,
-        correctedErrors: session.characters.filter((c) => c.state === 'corrected').length,
-        mode: session.mode,
-        problematicChars,
-      });
+    addSession({
+      startTime,
+      endTime: now,
+      duration: finalMetrics.elapsedTime,
+      text: session.text,
+      textLength: session.text.length,
+      wpm: {
+        grossWPM: finalMetrics.estimatedWPM,
+        netWPM: finalMetrics.estimatedWPM,
+        cpm: Math.round((finalMetrics.correctCharacters / (finalMetrics.elapsedTime / 60000))),
+      },
+      accuracy: finalMetrics.accuracy,
+      errors: finalMetrics.errors,
+      correctedErrors: session.characters.filter((c) => c.state === 'corrected').length,
+      mode: session.mode,
+      problematicChars,
+    });
 
-      // If this was a curriculum lesson, mark it as complete and find next lesson
-      if (currentLessonId) {
-        markLessonComplete(currentLessonId, currentWpm, sessionMetrics.accuracy);
+    // If this was a curriculum lesson, mark it as complete and find next lesson
+    if (currentLessonId) {
+      markLessonComplete(currentLessonId, currentWpm, finalMetrics.accuracy);
 
-        // Get the updated progress to find next lesson
-        // We need to simulate what the progress will look like after marking complete
-        if (progress) {
-          const updatedProgress = {
-            ...progress,
-            lessons: {
-              ...progress.lessons,
-              [currentLessonId]: {
-                ...progress.lessons[currentLessonId],
-                completed: true,
-              },
+      // Get the updated progress to find next lesson
+      // We need to simulate what the progress will look like after marking complete
+      if (progress) {
+        const updatedProgress = {
+          ...progress,
+          lessons: {
+            ...progress.lessons,
+            [currentLessonId]: {
+              ...progress.lessons[currentLessonId],
+              completed: true,
             },
-          };
-          const next = getNextLesson(updatedProgress);
-          setNextLesson(next);
-        }
+          },
+        };
+        const next = getNextLesson(updatedProgress);
+        setNextLesson(next);
       }
     }
-  }, [sessionMetrics, sessionStartTime, previousBestWpm, addSession, currentLessonId, markLessonComplete, progress]);
+  }, [sessionStartTime, previousBestWpm, addSession, currentLessonId, markLessonComplete, progress]);
 
   const handleCloseResults = useCallback(() => {
     setShowResults(false);

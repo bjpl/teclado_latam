@@ -41,8 +41,8 @@ import { useDeadKeys } from '@/hooks/useDeadKeys';
 export interface PracticeAreaProps {
   /** Initial text to practice (optional) */
   initialText?: string;
-  /** Callback when session completes */
-  onComplete?: (session: SessionState) => void;
+  /** Callback when session completes - includes final metrics for reliability */
+  onComplete?: (session: SessionState, finalMetrics: SessionMetrics) => void;
   /** Callback when metrics update */
   onMetricsUpdate?: (metrics: SessionMetrics) => void;
 }
@@ -229,9 +229,16 @@ export function PracticeArea({
 
   useEffect(() => {
     if (session?.isComplete && onComplete) {
-      onComplete(session);
+      // Calculate final metrics and pass directly to onComplete for reliability
+      const finalMetrics = calculateMetrics(session);
+      // Also update metrics state for any components that depend on it
+      if (onMetricsUpdate) {
+        onMetricsUpdate(finalMetrics);
+      }
+      // Pass both session and metrics to ensure parent has all data
+      onComplete(session, finalMetrics);
     }
-  }, [session?.isComplete, session, onComplete]);
+  }, [session?.isComplete, session, onComplete, onMetricsUpdate]);
 
   // ==========================================================================
   // Typing Activity Tracking
