@@ -39,6 +39,8 @@ export function Header({ className = '' }: HeaderProps) {
         border-b border-border-muted
         bg-surface-0/80
         backdrop-blur-sm
+        relative
+        z-20
         ${className}
       `}
     >
