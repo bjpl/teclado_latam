@@ -37,11 +37,10 @@ export function Header({ className = '' }: HeaderProps) {
         py-4
         flex items-center justify-between
         border-b border-border-muted
-        bg-surface-0/80
-        backdrop-blur-sm
-        relative
-        z-50
-        isolate
+        bg-surface-0
+        sticky
+        top-0
+        z-[100]
         ${className}
       `}
     >
