@@ -183,6 +183,7 @@ export function PracticeArea({
   );
   const [previousStates, setPreviousStates] = useState<CharacterState[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [lastTyped, setLastTyped] = useState<{ char: string; correct: boolean } | null>(null);
 
   // Dead key handling via hook (fixes stale closure issue with useRef internally)
   const {
@@ -345,6 +346,11 @@ export function PracticeArea({
 
       if (feedback.accepted) {
         setSession(updatedState);
+        // Update last typed indicator
+        setLastTyped({
+          char: charToProcess,
+          correct: feedback.isCorrect ?? true,
+        });
       }
     },
     [session, deadKeyPending, markTypingActive, processRawKey, resetDeadKeys]
@@ -359,6 +365,7 @@ export function PracticeArea({
     setSession(newSession);
     setPreviousStates([]);
     resetDeadKeys();
+    setLastTyped(null);
 
     // Focus input after loading
     setTimeout(() => {
@@ -405,8 +412,10 @@ export function PracticeArea({
       setSession(newSession);
       setPreviousStates([]);
       resetDeadKeys();
+      setLastTyped(null);
     } else {
       setSession(null);
+      setLastTyped(null);
     }
   }, [session?.text, resetDeadKeys]);
 
@@ -445,6 +454,30 @@ export function PracticeArea({
         onLoadText={handleLoadText}
       />
 
+      {/* Real-time typing indicator */}
+      {session && session.isStarted && !session.isPaused && lastTyped && (
+        <div className="flex items-center justify-center gap-3 py-2">
+          <span className="text-sm text-gray-500 dark:text-gray-400">Last typed:</span>
+          <span
+            className={`
+              inline-flex items-center justify-center
+              min-w-[2.5rem] h-10
+              px-3
+              font-mono text-xl font-medium
+              rounded-lg
+              border-2
+              transition-all duration-150
+              ${lastTyped.correct
+                ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700 text-green-700 dark:text-green-300'
+                : 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700 text-red-700 dark:text-red-300'
+              }
+            `}
+          >
+            {lastTyped.char === ' ' ? '␣' : lastTyped.char}
+          </span>
+        </div>
+      )}
+
       {/* Text Display (only show when session exists) */}
       {session && (
         <div className="relative">
@@ -468,7 +501,7 @@ export function PracticeArea({
             onBlur={handleBlur}
           />
 
-          {/* Focus prompt when not focused */}
+          {/* Start prompt overlay - clean, no blur */}
           {status === 'ready' && (
             <div
               className="
@@ -477,21 +510,29 @@ export function PracticeArea({
                 flex
                 items-center
                 justify-center
-                bg-black/30
-                dark:bg-black/50
-                backdrop-blur-[2px]
+                bg-gradient-to-b
+                from-gray-900/60
+                to-gray-900/80
+                dark:from-black/60
+                dark:to-black/80
                 rounded-lg
                 pointer-events-none
                 transition-opacity
+                duration-200
               "
             >
-              <p className="text-white text-lg font-medium">
-                Click anywhere or press Tab to start typing
-              </p>
+              <div className="text-center">
+                <p className="text-white text-xl font-semibold mb-2">
+                  Ready to type
+                </p>
+                <p className="text-white/70 text-sm">
+                  Click here or press any key to begin
+                </p>
+              </div>
             </div>
           )}
 
-          {/* Paused overlay */}
+          {/* Paused overlay - clean, no blur */}
           {status === 'paused' && (
             <div
               className="
@@ -500,16 +541,25 @@ export function PracticeArea({
                 flex
                 items-center
                 justify-center
-                bg-black/30
-                dark:bg-black/50
-                backdrop-blur-[2px]
+                bg-gradient-to-b
+                from-amber-900/60
+                to-amber-900/80
+                dark:from-amber-950/60
+                dark:to-amber-950/80
                 rounded-lg
                 pointer-events-none
+                transition-opacity
+                duration-200
               "
             >
-              <p className="text-white text-lg font-medium">
-                Paused - Click anywhere or press any key to resume
-              </p>
+              <div className="text-center">
+                <p className="text-white text-xl font-semibold mb-2">
+                  Paused
+                </p>
+                <p className="text-white/70 text-sm">
+                  Click or press any key to resume
+                </p>
+              </div>
             </div>
           )}
         </div>
