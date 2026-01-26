@@ -186,8 +186,8 @@ export const TextInput = forwardRef<TextInputRef, TextInputProps>(
           absolute
           left-0
           top-0
-          w-full
-          h-full
+          w-1
+          h-1
           p-0
           m-0
           bg-transparent
@@ -196,8 +196,7 @@ export const TextInput = forwardRef<TextInputRef, TextInputProps>(
           border-0
           outline-none
           resize-none
-          cursor-default
-          z-10
+          opacity-0
         "
         style={{
           // Make truly invisible but still focusable
