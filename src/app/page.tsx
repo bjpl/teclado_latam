@@ -60,6 +60,7 @@ function HomeContent() {
 
   // Refs
   const mainRef = useRef<HTMLElement>(null);
+  const finalMetricsRef = useRef<SessionMetrics | null>(null); // Frozen metrics for results modal
 
   // Track personal best WPM for comparison
   const previousBestWpm = useMemo(() => bestSession?.wpm.netWPM ?? 0, [bestSession]);
@@ -146,8 +147,11 @@ function HomeContent() {
   }, [sessionStartTime, showResults]);
 
   const handleSessionComplete = useCallback((session: SessionState, finalMetrics: SessionMetrics) => {
+    // CRITICAL: Store frozen metrics in ref FIRST - this prevents any timing issues
+    finalMetricsRef.current = finalMetrics;
+
     setCompletedSession(session);
-    setSessionMetrics(finalMetrics); // Store for modal display
+    setSessionMetrics(finalMetrics); // Also update state for MetricsPanel
     setShowResults(true);
 
     // Use passed metrics directly (reliable) instead of state (race condition prone)
@@ -213,6 +217,7 @@ function HomeContent() {
     setIsNewPersonalBest(false);
     setNextLesson(null);
     setSessionMetrics(null);
+    finalMetricsRef.current = null; // Clear frozen metrics
     // Increment key to force PracticeArea re-mount for fresh session
     setPracticeKey((k) => k + 1);
     // Re-focus main area for keyboard navigation
@@ -227,6 +232,7 @@ function HomeContent() {
       setSessionStartTime(null);
       setIsNewPersonalBest(false);
       setSessionMetrics(null);
+      finalMetricsRef.current = null; // Clear frozen metrics
 
       // Set up the next lesson
       const firstExercise = nextLesson.exercises[0];
@@ -382,14 +388,14 @@ function HomeContent() {
       {/* Footer */}
       <Footer />
 
-      {/* Results Modal */}
+      {/* Results Modal - Uses finalMetricsRef to ensure frozen metrics display */}
       <Modal
         isOpen={showResults}
         onClose={handleCloseResults}
         title={isNewPersonalBest ? "New Personal Best!" : "Session Complete!"}
         size="lg"
       >
-        {completedSession && sessionMetrics && (
+        {completedSession && finalMetricsRef.current && (
           <div className="space-y-6">
             {/* Personal Best Banner */}
             {isNewPersonalBest && (
@@ -400,11 +406,11 @@ function HomeContent() {
               </div>
             )}
 
-            {/* Hero Stats */}
+            {/* Hero Stats - Read from frozen ref, NOT state */}
             <div className="grid grid-cols-3 gap-4 text-center">
               <div className="p-4 bg-surface-1 rounded-lg">
                 <div className="text-3xl font-bold text-accent-primary tabular-nums">
-                  {sessionMetrics.estimatedWPM}
+                  {finalMetricsRef.current.estimatedWPM}
                 </div>
                 <div className="text-sm text-foreground/50 uppercase tracking-wider">
                   WPM
@@ -412,13 +418,13 @@ function HomeContent() {
               </div>
               <div className="p-4 bg-surface-1 rounded-lg">
                 <div className={`text-3xl font-bold tabular-nums ${
-                  sessionMetrics.accuracy >= 95
+                  finalMetricsRef.current.accuracy >= 95
                     ? 'text-accent-success'
-                    : sessionMetrics.accuracy >= 85
+                    : finalMetricsRef.current.accuracy >= 85
                     ? 'text-accent-warning'
                     : 'text-accent-error'
                 }`}>
-                  {sessionMetrics.accuracy.toFixed(1)}%
+                  {finalMetricsRef.current.accuracy.toFixed(1)}%
                 </div>
                 <div className="text-sm text-foreground/50 uppercase tracking-wider">
                   Accuracy
@@ -426,7 +432,7 @@ function HomeContent() {
               </div>
               <div className="p-4 bg-surface-1 rounded-lg">
                 <div className="text-3xl font-bold text-foreground tabular-nums">
-                  {Math.floor(sessionMetrics.elapsedTime / 1000)}s
+                  {Math.floor(finalMetricsRef.current.elapsedTime / 1000)}s
                 </div>
                 <div className="text-sm text-foreground/50 uppercase tracking-wider">
                   Time
@@ -444,34 +450,34 @@ function HomeContent() {
                   <div className="flex justify-between">
                     <span className="text-foreground/60">vs. Average WPM</span>
                     <span className={`font-medium ${
-                      sessionMetrics.estimatedWPM >= statistics.averageWpm
+                      finalMetricsRef.current.estimatedWPM >= statistics.averageWpm
                         ? 'text-accent-success'
                         : 'text-accent-error'
                     }`}>
-                      {sessionMetrics.estimatedWPM >= statistics.averageWpm ? '+' : ''}
-                      {(sessionMetrics.estimatedWPM - statistics.averageWpm).toFixed(1)}
+                      {finalMetricsRef.current.estimatedWPM >= statistics.averageWpm ? '+' : ''}
+                      {(finalMetricsRef.current.estimatedWPM - statistics.averageWpm).toFixed(1)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-foreground/60">vs. Best WPM</span>
                     <span className={`font-medium ${
-                      sessionMetrics.estimatedWPM >= statistics.bestWpm
+                      finalMetricsRef.current.estimatedWPM >= statistics.bestWpm
                         ? 'text-accent-success'
                         : 'text-foreground/70'
                     }`}>
-                      {sessionMetrics.estimatedWPM >= statistics.bestWpm ? '+' : ''}
-                      {(sessionMetrics.estimatedWPM - statistics.bestWpm).toFixed(1)}
+                      {finalMetricsRef.current.estimatedWPM >= statistics.bestWpm ? '+' : ''}
+                      {(finalMetricsRef.current.estimatedWPM - statistics.bestWpm).toFixed(1)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-foreground/60">vs. Avg Accuracy</span>
                     <span className={`font-medium ${
-                      sessionMetrics.accuracy >= statistics.averageAccuracy
+                      finalMetricsRef.current.accuracy >= statistics.averageAccuracy
                         ? 'text-accent-success'
                         : 'text-accent-error'
                     }`}>
-                      {sessionMetrics.accuracy >= statistics.averageAccuracy ? '+' : ''}
-                      {(sessionMetrics.accuracy - statistics.averageAccuracy).toFixed(1)}%
+                      {finalMetricsRef.current.accuracy >= statistics.averageAccuracy ? '+' : ''}
+                      {(finalMetricsRef.current.accuracy - statistics.averageAccuracy).toFixed(1)}%
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -492,15 +498,15 @@ function HomeContent() {
               </div>
               <div className="flex justify-between py-2 border-b border-border-muted">
                 <span className="text-foreground/60">Correct</span>
-                <span className="font-medium text-accent-success">{sessionMetrics.correctCharacters}</span>
+                <span className="font-medium text-accent-success">{finalMetricsRef.current.correctCharacters}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-border-muted">
                 <span className="text-foreground/60">Errors</span>
-                <span className="font-medium text-accent-error">{sessionMetrics.errors}</span>
+                <span className="font-medium text-accent-error">{finalMetricsRef.current.errors}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-border-muted">
                 <span className="text-foreground/60">Total Typed</span>
-                <span className="font-medium">{sessionMetrics.charactersTyped}</span>
+                <span className="font-medium">{finalMetricsRef.current.charactersTyped}</span>
               </div>
             </div>
 
