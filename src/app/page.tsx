@@ -56,6 +56,7 @@ function HomeContent() {
   });
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [isNewPersonalBest, setIsNewPersonalBest] = useState(false);
+  const [practiceKey, setPracticeKey] = useState(0); // Key to force PracticeArea reset
 
   // Refs
   const mainRef = useRef<HTMLElement>(null);
@@ -209,6 +210,9 @@ function HomeContent() {
     setSessionStartTime(null);
     setIsNewPersonalBest(false);
     setNextLesson(null);
+    setSessionMetrics(null);
+    // Increment key to force PracticeArea re-mount for fresh session
+    setPracticeKey((k) => k + 1);
     // Re-focus main area for keyboard navigation
     mainRef.current?.focus();
   }, []);
@@ -228,6 +232,8 @@ function HomeContent() {
       setCurrentLessonId(nextLesson.id);
       setCurrentLessonName(nextLesson.name);
       setNextLesson(null);
+      // Increment key to force PracticeArea re-mount for fresh session
+      setPracticeKey((k) => k + 1);
 
       // Update URL
       if (typeof window !== 'undefined') {
@@ -246,6 +252,8 @@ function HomeContent() {
     setShowTextSelector(false);
     setSessionMetrics(null);
     setSessionStartTime(null);
+    // Increment key to ensure fresh PracticeArea
+    setPracticeKey((k) => k + 1);
   }, []);
 
   // Handle saving custom text
@@ -348,6 +356,7 @@ function HomeContent() {
             {/* Practice Area */}
             <div className="w-full max-w-4xl animate-slide-up">
               <PracticeArea
+                key={practiceKey}
                 initialText={currentText}
                 onComplete={handleSessionComplete}
                 onMetricsUpdate={handleMetricsUpdate}
