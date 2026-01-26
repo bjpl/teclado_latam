@@ -127,7 +127,7 @@ export function Header({ className = '' }: HeaderProps) {
             <span className="hidden sm:flex items-center gap-2 text-sm">
               <span className="text-foreground/50">{statistics.totalSessions} sessions</span>
               <span className="text-foreground/30">|</span>
-              <span className="text-accent-primary font-medium">{statistics.averageWpm} avg</span>
+              <span className="text-accent-primary font-medium">{Math.round(statistics.averageWpm)} WPM</span>
             </span>
           )}
         </a>

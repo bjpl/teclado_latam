@@ -23,8 +23,8 @@ import { PracticeArea, TextSelector, type SessionMetrics } from '@/components/pr
 import { VirtualKeyboard } from '@/components/keyboard';
 import { MetricsPanel } from '@/components/metrics';
 import { Modal } from '@/components/ui';
-import { useSessionHistory, useCustomTexts } from '@/hooks';
-import { LESSONS_BY_ID } from '@/lib/curriculum';
+import { useSessionHistory, useCustomTexts, useCurriculumProgress } from '@/hooks';
+import { LESSONS_BY_ID, getNextLesson, type Lesson } from '@/lib/curriculum';
 import type { SessionState, ModifierState } from '@/lib/typing-engine/types';
 
 // =============================================================================
@@ -36,11 +36,14 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const { addSession, statistics, bestSession } = useSessionHistory();
   const { texts: savedTexts, addText, deleteText, updateLastUsed } = useCustomTexts();
+  const { markLessonComplete, progress } = useCurriculumProgress();
 
   // State
   const [currentText, setCurrentText] = useState<string | null>(null);
   const [showTextSelector, setShowTextSelector] = useState(true);
+  const [currentLessonId, setCurrentLessonId] = useState<string | null>(null);
   const [currentLessonName, setCurrentLessonName] = useState<string | null>(null);
+  const [nextLesson, setNextLesson] = useState<Lesson | null>(null);
   const [sessionMetrics, setSessionMetrics] = useState<SessionMetrics | null>(null);
   const [completedSession, setCompletedSession] = useState<SessionState | null>(null);
   const [showResults, setShowResults] = useState(false);
@@ -72,10 +75,12 @@ function HomeContent() {
         // Get the first exercise text from the lesson
         const firstExercise = lesson.exercises[0];
         setCurrentText(firstExercise.text);
+        setCurrentLessonId(lessonId);
         setCurrentLessonName(lesson.name);
         setShowTextSelector(false);
         setSessionMetrics(null);
         setSessionStartTime(null);
+        setNextLesson(null);
       }
     }
   }, [searchParams]);
@@ -173,17 +178,66 @@ function HomeContent() {
         mode: session.mode,
         problematicChars,
       });
+
+      // If this was a curriculum lesson, mark it as complete and find next lesson
+      if (currentLessonId) {
+        markLessonComplete(currentLessonId, currentWpm, sessionMetrics.accuracy);
+
+        // Get the updated progress to find next lesson
+        // We need to simulate what the progress will look like after marking complete
+        if (progress) {
+          const updatedProgress = {
+            ...progress,
+            lessons: {
+              ...progress.lessons,
+              [currentLessonId]: {
+                ...progress.lessons[currentLessonId],
+                completed: true,
+              },
+            },
+          };
+          const next = getNextLesson(updatedProgress);
+          setNextLesson(next);
+        }
+      }
     }
-  }, [sessionMetrics, sessionStartTime, previousBestWpm, addSession]);
+  }, [sessionMetrics, sessionStartTime, previousBestWpm, addSession, currentLessonId, markLessonComplete, progress]);
 
   const handleCloseResults = useCallback(() => {
     setShowResults(false);
     setCompletedSession(null);
     setSessionStartTime(null);
     setIsNewPersonalBest(false);
+    setNextLesson(null);
     // Re-focus main area for keyboard navigation
     mainRef.current?.focus();
   }, []);
+
+  // Handle starting the next lesson
+  const handleNextLesson = useCallback(() => {
+    if (nextLesson && nextLesson.exercises.length > 0) {
+      setShowResults(false);
+      setCompletedSession(null);
+      setSessionStartTime(null);
+      setIsNewPersonalBest(false);
+      setSessionMetrics(null);
+
+      // Set up the next lesson
+      const firstExercise = nextLesson.exercises[0];
+      setCurrentText(firstExercise.text);
+      setCurrentLessonId(nextLesson.id);
+      setCurrentLessonName(nextLesson.name);
+      setNextLesson(null);
+
+      // Update URL
+      if (typeof window !== 'undefined') {
+        window.history.replaceState({}, '', `/?lessonId=${encodeURIComponent(nextLesson.id)}`);
+      }
+
+      // Re-focus main area
+      mainRef.current?.focus();
+    }
+  }, [nextLesson]);
 
 
   // Handle text selection from TextSelector
@@ -208,7 +262,9 @@ function HomeContent() {
   const handleChangeText = useCallback(() => {
     setShowTextSelector(true);
     setCurrentText(null);
+    setCurrentLessonId(null);
     setCurrentLessonName(null);
+    setNextLesson(null);
     setSessionMetrics(null);
     setCompletedSession(null);
     setSessionStartTime(null);
@@ -438,36 +494,73 @@ function HomeContent() {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={handleCloseResults}
-                className="
-                  flex-1 px-4 py-3
-                  bg-accent-primary hover:bg-accent-primary/90
-                  text-white font-medium
-                  rounded-lg
-                  transition-colors
-                  focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary
-                "
-              >
-                Practice Again
-              </button>
-              <button
-                onClick={() => {
-                  handleCloseResults();
-                  handleChangeText();
-                }}
-                className="
-                  px-4 py-3
-                  bg-surface-2 hover:bg-surface-2/80
-                  text-foreground font-medium
-                  rounded-lg
-                  transition-colors
-                  focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary
-                "
-              >
-                New Text
-              </button>
+            <div className="flex flex-col gap-3 pt-2">
+              {/* Next Lesson Button - Primary action when available */}
+              {nextLesson && (
+                <button
+                  onClick={handleNextLesson}
+                  className="
+                    w-full px-4 py-3
+                    bg-accent-primary hover:bg-accent-primary/90
+                    text-white font-medium
+                    rounded-lg
+                    transition-colors
+                    focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary
+                  "
+                >
+                  Next Lesson: {nextLesson.name}
+                </button>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleCloseResults}
+                  className={`
+                    flex-1 px-4 py-3
+                    ${nextLesson ? 'bg-surface-2 hover:bg-surface-2/80 text-foreground' : 'bg-accent-primary hover:bg-accent-primary/90 text-white'}
+                    font-medium
+                    rounded-lg
+                    transition-colors
+                    focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary
+                  `}
+                >
+                  Practice Again
+                </button>
+                <button
+                  onClick={() => {
+                    handleCloseResults();
+                    handleChangeText();
+                  }}
+                  className="
+                    px-4 py-3
+                    bg-surface-2 hover:bg-surface-2/80
+                    text-foreground font-medium
+                    rounded-lg
+                    transition-colors
+                    focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary
+                  "
+                >
+                  New Text
+                </button>
+              </div>
+
+              {/* Link to curriculum */}
+              {currentLessonId && (
+                <a
+                  href="/curriculum"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleCloseResults();
+                    window.location.href = '/curriculum';
+                  }}
+                  className="
+                    text-center text-sm text-foreground/60 hover:text-foreground
+                    transition-colors cursor-pointer
+                  "
+                >
+                  View All Lessons
+                </a>
+              )}
             </div>
           </div>
         )}

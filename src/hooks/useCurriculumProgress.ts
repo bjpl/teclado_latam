@@ -16,7 +16,6 @@ import { useLocalStorage } from './useLocalStorage';
 import {
   LESSONS_BY_ID,
   CURRICULUM_MODULES,
-  isLessonUnlocked as checkUnlocked,
   calculateStars,
   type LessonProgress,
   type CurriculumProgress,
@@ -54,6 +53,7 @@ export interface UseCurriculumProgressReturn {
 
 /**
  * Create initial progress structure
+ * NOTE: All lessons are unlocked by default (no progress gating)
  */
 function createInitialProgress(): CurriculumProgress {
   const lessons: Record<string, LessonProgress> = {};
@@ -61,7 +61,7 @@ function createInitialProgress(): CurriculumProgress {
   Object.values(LESSONS_BY_ID).forEach((lesson) => {
     lessons[lesson.id] = {
       lessonId: lesson.id,
-      unlocked: lesson.prerequisites.length === 0,
+      unlocked: true, // All lessons unlocked by default
       completed: false,
       attempts: 0,
       bestWPM: 0,
@@ -201,14 +201,15 @@ export function useCurriculumProgress(): UseCurriculumProgressReturn {
   );
 
   /**
-   * Check if a lesson is unlocked based on prerequisites
+   * Check if a lesson is unlocked
+   * NOTE: All lessons are unlocked by default (no progress gating)
    */
   const isLessonUnlocked = useCallback(
     (lessonId: string): boolean => {
-      if (!storedProgress) return false;
-      return checkUnlocked(lessonId, storedProgress);
+      // All lessons are always unlocked
+      return LESSONS_BY_ID[lessonId] !== undefined;
     },
-    [storedProgress]
+    []
   );
 
   /**
