@@ -99,19 +99,11 @@ export function getLessonsByDifficulty(difficulty: Lesson['difficulty']): Lesson
  */
 export function isLessonUnlocked(
   lessonId: string,
-  progress: CurriculumProgress
+  _progress: CurriculumProgress
 ): boolean {
-  const lesson = LESSONS_BY_ID[lessonId];
-  if (!lesson) return false;
-
-  // First lessons have no prerequisites
-  if (lesson.prerequisites.length === 0) return true;
-
-  // Check all prerequisites are completed
-  return lesson.prerequisites.every((prereqId) => {
-    const prereqProgress = progress.lessons[prereqId];
-    return prereqProgress?.completed === true;
-  });
+  // All lessons are always unlocked (no progress gating)
+  // Just verify the lesson exists
+  return LESSONS_BY_ID[lessonId] !== undefined;
 }
 
 /**
@@ -175,7 +167,7 @@ export function createInitialProgress(userId: string): CurriculumProgress {
   for (const lesson of ALL_LESSONS) {
     lessons[lesson.id] = {
       lessonId: lesson.id,
-      unlocked: lesson.prerequisites.length === 0,
+      unlocked: true, // All lessons unlocked by default (no progress gating)
       completed: false,
       attempts: 0,
       bestWPM: 0,

@@ -31,6 +31,9 @@ function isBrowser(): boolean {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
 }
 
+// Custom event name for same-tab localStorage sync
+const STORAGE_SYNC_EVENT = 'teclado-storage-sync';
+
 /**
  * Custom hook for localStorage with SSR safety
  *
@@ -102,6 +105,29 @@ export function useLocalStorage<T>(
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [key, initialValue, deserialize, syncTabs]);
 
+  // Sync within same tab via custom event
+  useEffect(() => {
+    if (!isBrowser()) return;
+
+    const handleSameTabSync = (event: CustomEvent<{ key: string }>) => {
+      if (event.detail.key === key) {
+        try {
+          const item = window.localStorage.getItem(key);
+          if (item !== null) {
+            setStoredValue(deserialize(item));
+          } else {
+            setStoredValue(initialValue);
+          }
+        } catch (error) {
+          console.warn(`Error syncing localStorage key "${key}":`, error);
+        }
+      }
+    };
+
+    window.addEventListener(STORAGE_SYNC_EVENT, handleSameTabSync as EventListener);
+    return () => window.removeEventListener(STORAGE_SYNC_EVENT, handleSameTabSync as EventListener);
+  }, [key, initialValue, deserialize]);
+
   /**
    * Set value in state and localStorage
    */
@@ -115,6 +141,8 @@ export function useLocalStorage<T>(
 
         if (isBrowser()) {
           window.localStorage.setItem(key, serialize(valueToStore));
+          // Dispatch custom event for same-tab sync
+          window.dispatchEvent(new CustomEvent(STORAGE_SYNC_EVENT, { detail: { key } }));
         }
       } catch (error) {
         console.warn(`Error setting localStorage key "${key}":`, error);
@@ -132,6 +160,8 @@ export function useLocalStorage<T>(
 
       if (isBrowser()) {
         window.localStorage.removeItem(key);
+        // Dispatch custom event for same-tab sync
+        window.dispatchEvent(new CustomEvent(STORAGE_SYNC_EVENT, { detail: { key } }));
       }
     } catch (error) {
       console.warn(`Error removing localStorage key "${key}":`, error);
