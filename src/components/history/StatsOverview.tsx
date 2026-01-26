@@ -58,28 +58,28 @@ function StatCard({
   trend?: number;
 }) {
   return (
-    <div className="flex items-start gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
+    <div className="flex items-start gap-3 p-4 bg-surface-0 rounded-xl border border-border-muted">
       <div
         className={cn(
           'flex items-center justify-center w-10 h-10 rounded-lg',
-          colorClass || 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+          colorClass || 'bg-surface-1 text-foreground/60'
         )}
       >
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
-        <p className="text-xl font-semibold text-gray-900 dark:text-gray-100 tabular-nums truncate">
+        <p className="text-sm text-foreground/60">{label}</p>
+        <p className="text-xl font-semibold text-foreground tabular-nums truncate">
           {value}
         </p>
         {sublabel && (
-          <p className="text-xs text-gray-400 dark:text-gray-500">{sublabel}</p>
+          <p className="text-xs text-foreground/40">{sublabel}</p>
         )}
         {trend !== undefined && trend !== 0 && (
           <p
             className={cn(
               'text-xs',
-              trend > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+              trend > 0 ? 'text-accent-success' : 'text-accent-error'
             )}
           >
             {trend > 0 ? '+' : ''}{trend.toFixed(1)} vs older sessions
@@ -105,15 +105,15 @@ export function StatsOverview({ stats, className = '' }: StatsOverviewProps) {
     return (
       <div
         className={cn(
-          'p-8 text-center bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700',
+          'p-8 text-center bg-surface-1 rounded-xl border border-border-muted',
           className
         )}
       >
         <div className="text-4xl mb-3">📊</div>
-        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">
+        <h3 className="text-lg font-medium text-foreground mb-1">
           No Statistics Yet
         </h3>
-        <p className="text-gray-500 dark:text-gray-400">
+        <p className="text-foreground/60">
           Complete your first typing session to start tracking your progress.
         </p>
       </div>

@@ -76,15 +76,15 @@ export default function HistoryPage() {
   }, [removeSession]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800">
+      <header className="sticky top-0 z-10 bg-surface-0/80 backdrop-blur-sm border-b border-border-muted">
         <div className="max-w-5xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                className="inline-flex items-center gap-2 text-foreground/60 hover:text-foreground transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -92,7 +92,7 @@ export default function HistoryPage() {
                 Back to Practice
               </Link>
             </div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            <h1 className="text-xl font-semibold text-foreground">
               Session History
             </h1>
             <div className="w-[140px]" /> {/* Spacer for centering */}
@@ -103,7 +103,7 @@ export default function HistoryPage() {
       <main className="max-w-5xl mx-auto px-4 py-8 space-y-8 relative z-0">
         {/* Stats Overview */}
         <section>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          <h2 className="text-lg font-semibold text-foreground mb-4">
             Your Statistics
           </h2>
           <StatsOverview stats={statistics} />
@@ -113,10 +113,10 @@ export default function HistoryPage() {
         {sessions.length > 1 && (
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              <h2 className="text-lg font-semibold text-foreground">
                 Progress Over Time
               </h2>
-              <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+              <div className="flex items-center gap-1 bg-surface-1 rounded-lg p-1">
                 {(['wpm', 'accuracy', 'both'] as const).map((metric) => (
                   <button
                     key={metric}
@@ -124,8 +124,8 @@ export default function HistoryPage() {
                     className={cn(
                       'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
                       chartMetric === metric
-                        ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
-                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                        ? 'bg-surface-0 text-foreground shadow-sm'
+                        : 'text-foreground/60 hover:text-foreground'
                     )}
                   >
                     {metric === 'both' ? 'Both' : metric.toUpperCase()}
@@ -146,13 +146,13 @@ export default function HistoryPage() {
         {/* Session List */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            <h2 className="text-lg font-semibold text-foreground">
               Past Sessions
             </h2>
             {sessions.length > 0 && (
               <button
                 onClick={() => setShowClearConfirm(true)}
-                className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+                className="text-sm text-accent-error hover:text-accent-error/80 transition-colors"
               >
                 Clear All History
               </button>
@@ -172,7 +172,7 @@ export default function HistoryPage() {
           <section className="text-center py-8">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-accent-primary hover:bg-accent-primary/90 text-white font-medium rounded-xl transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -202,7 +202,7 @@ export default function HistoryPage() {
         }
       >
         <div className="py-4">
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-foreground/60">
             You are about to delete {sessions.length} session{sessions.length !== 1 ? 's' : ''} and all associated statistics.
           </p>
         </div>

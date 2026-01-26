@@ -59,8 +59,8 @@ function SortButton({
       className={cn(
         'inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
         isActive
-          ? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900'
-          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+          ? 'bg-foreground text-background'
+          : 'text-foreground/60 hover:bg-surface-1'
       )}
     >
       {label}
@@ -107,7 +107,7 @@ function DateFilter({
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors border border-gray-200 dark:border-gray-700"
+        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-foreground/60 hover:bg-surface-1 transition-colors border border-border-muted"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -121,7 +121,7 @@ function DateFilter({
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-20">
+          <div className="absolute right-0 mt-2 w-48 bg-surface-0 rounded-lg shadow-lg border border-border-muted z-20">
             {presets.map((preset) => (
               <button
                 key={preset.label}
@@ -132,8 +132,8 @@ function DateFilter({
                 className={cn(
                   'w-full text-left px-4 py-2 text-sm transition-colors',
                   preset.label === currentPreset.label
-                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    ? 'bg-accent-primary/10 text-accent-primary'
+                    : 'text-foreground/80 hover:bg-surface-1'
                 )}
               >
                 {preset.label}
@@ -155,10 +155,10 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
       <div className="text-4xl mb-3">
         {hasFilters ? '🔍' : '📝'}
       </div>
-      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">
+      <h3 className="text-lg font-medium text-foreground mb-1">
         {hasFilters ? 'No sessions match your filters' : 'No sessions yet'}
       </h3>
-      <p className="text-gray-500 dark:text-gray-400">
+      <p className="text-foreground/60">
         {hasFilters
           ? 'Try adjusting your filters or date range.'
           : 'Complete your first typing session to see your history here.'}
@@ -260,7 +260,7 @@ export function SessionList({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         {/* Sort buttons */}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500 dark:text-gray-400">Sort by:</span>
+          <span className="text-sm text-foreground/60">Sort by:</span>
           <div className="flex items-center gap-1">
             {SORT_OPTIONS.map((option) => (
               <SortButton
@@ -280,7 +280,7 @@ export function SessionList({
       </div>
 
       {/* Results count */}
-      <div className="text-sm text-gray-500 dark:text-gray-400">
+      <div className="text-sm text-foreground/60">
         {sortedSessions.length === 0 ? (
           'No sessions'
         ) : (
@@ -293,7 +293,7 @@ export function SessionList({
       {/* Loading state */}
       {isLoading ? (
         <div className="py-12 text-center">
-          <div className="inline-flex items-center gap-2 text-gray-500 dark:text-gray-400">
+          <div className="inline-flex items-center gap-2 text-foreground/60">
             <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -328,8 +328,8 @@ export function SessionList({
                 className={cn(
                   'inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
                   page > 1
-                    ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                    : 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                    ? 'text-foreground/80 hover:bg-surface-1'
+                    : 'text-foreground/30 cursor-not-allowed'
                 )}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -338,7 +338,7 @@ export function SessionList({
                 Previous
               </button>
 
-              <span className="text-sm text-gray-500 dark:text-gray-400">
+              <span className="text-sm text-foreground/60">
                 Page {page} of {totalPages}
               </span>
 
@@ -348,8 +348,8 @@ export function SessionList({
                 className={cn(
                   'inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
                   page < totalPages
-                    ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                    : 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                    ? 'text-foreground/80 hover:bg-surface-1'
+                    : 'text-foreground/30 cursor-not-allowed'
                 )}
               >
                 Next
