@@ -98,6 +98,7 @@ function createTestSession(
     isPaused: false,
     isComplete: false,
     startTime: null,
+    endTime: null,
     pauseTime: null,
     totalPausedTime: 0,
     settings,

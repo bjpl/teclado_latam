@@ -97,12 +97,15 @@ function getSessionStatus(state: SessionState | null): SessionStatus {
 
 /**
  * Calculate current metrics from session state
+ * Uses endTime for completed sessions to freeze metrics
  */
 function calculateMetrics(state: SessionState): SessionMetrics {
   const now = performance.now();
   const startTime = state.startTime ?? now;
+  // Use endTime for completed sessions to freeze metrics, otherwise use current time
+  const endPoint = state.isComplete && state.endTime ? state.endTime : now;
   const elapsedTime = state.isStarted
-    ? now - startTime - state.totalPausedTime
+    ? endPoint - startTime - state.totalPausedTime
     : 0;
 
   const correctCharacters = state.characters.filter(

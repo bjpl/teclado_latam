@@ -63,6 +63,7 @@ export function createSession(
     isPaused: false,
     isComplete: false,
     startTime: null,
+    endTime: null,
     pauseTime: null,
     totalPausedTime: 0,
     settings: defaultSettings,
@@ -259,6 +260,9 @@ export function processKeystroke(
   // Check for session completion
   const isSessionComplete = newState.currentIndex >= newState.characters.length;
   newState.isComplete = isSessionComplete;
+  if (isSessionComplete) {
+    newState.endTime = performance.now();
+  }
 
   return {
     updatedState: newState,

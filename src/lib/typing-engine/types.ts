@@ -73,6 +73,8 @@ export interface SessionState {
   isComplete: boolean;
   /** Timestamp when session started */
   startTime: number | null;
+  /** Timestamp when session ended (for freezing metrics) */
+  endTime: number | null;
   /** Timestamp when paused */
   pauseTime: number | null;
   /** Total time spent paused (ms) */
