@@ -12,7 +12,7 @@
 
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Settings, Keyboard, History, BookOpen } from 'lucide-react';
 import { useSessionHistory } from '@/hooks';
 
@@ -27,7 +27,14 @@ export interface HeaderProps {
  * Clean, minimal design that stays out of the way during typing practice.
  */
 export function Header({ className = '' }: HeaderProps) {
+  const router = useRouter();
   const { statistics, isLoaded } = useSessionHistory();
+
+  const handleNavigation = (path: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(path);
+  };
 
   return (
     <header
@@ -69,10 +76,11 @@ export function Header({ className = '' }: HeaderProps) {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-2 pointer-events-auto">
-        {/* Curriculum Link */}
-        <Link
-          href="/curriculum"
+      <div className="flex items-center gap-2">
+        {/* Curriculum Button */}
+        <button
+          type="button"
+          onClick={handleNavigation('/curriculum')}
           className="
             flex items-center gap-2
             px-3 py-2
@@ -84,18 +92,18 @@ export function Header({ className = '' }: HeaderProps) {
             focus:outline-none
             focus-visible:ring-2
             focus-visible:ring-accent-primary
-            pointer-events-auto
             cursor-pointer
           "
           aria-label="View curriculum"
         >
           <BookOpen className="w-5 h-5" />
           <span className="hidden sm:inline text-sm">Curriculum</span>
-        </Link>
+        </button>
 
-        {/* History Link with Quick Stats */}
-        <Link
-          href="/history"
+        {/* History Button */}
+        <button
+          type="button"
+          onClick={handleNavigation('/history')}
           className="
             flex items-center gap-2
             px-3 py-2
@@ -107,7 +115,6 @@ export function Header({ className = '' }: HeaderProps) {
             focus:outline-none
             focus-visible:ring-2
             focus-visible:ring-accent-primary
-            pointer-events-auto
             cursor-pointer
           "
           aria-label="View session history"
@@ -120,11 +127,12 @@ export function Header({ className = '' }: HeaderProps) {
               <span className="text-accent-primary font-medium">{statistics.averageWpm} avg</span>
             </span>
           )}
-        </Link>
+        </button>
 
-        {/* Settings Link */}
-        <Link
-          href="/settings"
+        {/* Settings Button */}
+        <button
+          type="button"
+          onClick={handleNavigation('/settings')}
           className="
             p-2.5
             rounded-lg
@@ -135,13 +143,12 @@ export function Header({ className = '' }: HeaderProps) {
             focus:outline-none
             focus-visible:ring-2
             focus-visible:ring-accent-primary
-            pointer-events-auto
             cursor-pointer
           "
           aria-label="Open settings"
         >
           <Settings className="w-5 h-5" />
-        </Link>
+        </button>
       </div>
     </header>
   );
