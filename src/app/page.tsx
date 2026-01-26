@@ -16,7 +16,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef, useMemo, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { PracticeArea, TextSelector, type SessionMetrics } from '@/components/practice';
@@ -34,6 +34,7 @@ import type { SessionState, ModifierState } from '@/lib/typing-engine/types';
 function HomeContent() {
   // Hooks
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { addSession, statistics, bestSession } = useSessionHistory();
   const { texts: savedTexts, addText, deleteText, updateLastUsed } = useCustomTexts();
   const { markLessonComplete, progress } = useCurriculumProgress();
@@ -57,6 +58,7 @@ function HomeContent() {
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [isNewPersonalBest, setIsNewPersonalBest] = useState(false);
   const [practiceKey, setPracticeKey] = useState(0); // Key to force PracticeArea reset
+  const [isTransitioning, setIsTransitioning] = useState(false); // Prevents flashing during transitions
 
   // Refs
   const mainRef = useRef<HTMLElement>(null);
@@ -211,28 +213,41 @@ function HomeContent() {
   }, [sessionStartTime, previousBestWpm, addSession, currentLessonId, markLessonComplete, progress]);
 
   const handleCloseResults = useCallback(() => {
+    // Start transition to prevent flashing
+    setIsTransitioning(true);
+
+    // Batch all state resets
     setShowResults(false);
     setCompletedSession(null);
     setSessionStartTime(null);
     setIsNewPersonalBest(false);
     setNextLesson(null);
     setSessionMetrics(null);
-    finalMetricsRef.current = null; // Clear frozen metrics
+    finalMetricsRef.current = null;
+
     // Increment key to force PracticeArea re-mount for fresh session
     setPracticeKey((k) => k + 1);
-    // Re-focus main area for keyboard navigation
-    mainRef.current?.focus();
+
+    // End transition after a brief delay to allow re-mount
+    requestAnimationFrame(() => {
+      setIsTransitioning(false);
+      mainRef.current?.focus();
+    });
   }, []);
 
   // Handle starting the next lesson
   const handleNextLesson = useCallback(() => {
     if (nextLesson && nextLesson.exercises.length > 0) {
+      // Start transition to prevent flashing
+      setIsTransitioning(true);
+
+      // Batch all state updates
       setShowResults(false);
       setCompletedSession(null);
       setSessionStartTime(null);
       setIsNewPersonalBest(false);
       setSessionMetrics(null);
-      finalMetricsRef.current = null; // Clear frozen metrics
+      finalMetricsRef.current = null;
 
       // Set up the next lesson
       const firstExercise = nextLesson.exercises[0];
@@ -240,16 +255,20 @@ function HomeContent() {
       setCurrentLessonId(nextLesson.id);
       setCurrentLessonName(nextLesson.name);
       setNextLesson(null);
+
       // Increment key to force PracticeArea re-mount for fresh session
       setPracticeKey((k) => k + 1);
 
-      // Update URL
+      // Update URL without triggering navigation
       if (typeof window !== 'undefined') {
         window.history.replaceState({}, '', `/?lessonId=${encodeURIComponent(nextLesson.id)}`);
       }
 
-      // Re-focus main area
-      mainRef.current?.focus();
+      // End transition after a brief delay to allow re-mount
+      requestAnimationFrame(() => {
+        setIsTransitioning(false);
+        mainRef.current?.focus();
+      });
     }
   }, [nextLesson]);
 
@@ -333,8 +352,8 @@ function HomeContent() {
           </div>
         ) : currentText ? (
           <>
-            {/* Metrics Panel - Top - ONLY show during active session, NOT when results are showing */}
-            {sessionMetrics && !showResults && (
+            {/* Metrics Panel - Top - ONLY show during active session, NOT when results/transitioning */}
+            {sessionMetrics && !showResults && !isTransitioning && (
               <MetricsPanel
                 grossWPM={sessionMetrics.estimatedWPM}
                 netWPM={sessionMetrics.estimatedWPM}
@@ -525,7 +544,7 @@ function HomeContent() {
                     focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary
                   "
                 >
-                  Next Lesson: {nextLesson.name}
+                  Continue to Next Lesson
                 </button>
               )}
 
@@ -541,7 +560,7 @@ function HomeContent() {
                     focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary
                   `}
                 >
-                  Practice Again
+                  Retry This Lesson
                 </button>
                 <button
                   onClick={() => {
@@ -557,18 +576,16 @@ function HomeContent() {
                     focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary
                   "
                 >
-                  New Text
+                  Choose Text
                 </button>
               </div>
 
-              {/* Link to curriculum */}
+              {/* Link to curriculum - uses Next.js router for smooth navigation */}
               {currentLessonId && (
-                <a
-                  href="/curriculum"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleCloseResults();
-                    window.location.href = '/curriculum';
+                <button
+                  onClick={() => {
+                    setShowResults(false);
+                    router.push('/curriculum');
                   }}
                   className="
                     text-center text-sm text-foreground/60 hover:text-foreground
@@ -576,7 +593,7 @@ function HomeContent() {
                   "
                 >
                   View All Lessons
-                </a>
+                </button>
               )}
             </div>
           </div>
