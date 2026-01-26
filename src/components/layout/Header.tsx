@@ -30,14 +30,8 @@ export interface HeaderProps {
 export function Header({ className = '' }: HeaderProps) {
   const { statistics, isLoaded } = useSessionHistory();
 
-  // Debug: log clicks on header to verify events are reaching it
-  const handleHeaderClick = (e: React.MouseEvent) => {
-    console.log('Header clicked!', e.target);
-  };
-
   return (
     <header
-      onClick={handleHeaderClick}
       className={`
         w-full
         px-4 sm:px-6 lg:px-8
