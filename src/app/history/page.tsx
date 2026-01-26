@@ -100,7 +100,7 @@ export default function HistoryPage() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-8 space-y-8">
+      <main className="max-w-5xl mx-auto px-4 py-8 space-y-8 relative z-0">
         {/* Stats Overview */}
         <section>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">

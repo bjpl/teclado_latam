@@ -42,8 +42,11 @@ export function Header({ className = '' }: HeaderProps) {
         sticky
         top-0
         z-[100]
+        relative
+        pointer-events-auto
         ${className}
       `}
+      style={{ zIndex: 100 }}
     >
       {/* Logo and Title */}
       <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">

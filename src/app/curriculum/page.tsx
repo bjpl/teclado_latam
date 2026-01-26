@@ -34,7 +34,7 @@ export default function CurriculumPage() {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
 
-      <main className="flex-1 container mx-auto px-4 py-6 max-w-5xl">
+      <main className="flex-1 container mx-auto px-4 py-6 max-w-5xl relative z-0">
         {/* Page Header */}
         <div className="mb-6">
           <Link

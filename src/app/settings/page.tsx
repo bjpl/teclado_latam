@@ -48,7 +48,7 @@ export default function SettingsPage() {
         </header>
 
         {/* Settings Panel */}
-        <main>
+        <main className="relative z-0">
           <SettingsPanel
             settings={settings}
             onSettingsChange={updateSettings}
