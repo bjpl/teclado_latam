@@ -197,6 +197,7 @@ export const TextInput = forwardRef<TextInputRef, TextInputProps>(
           outline-none
           resize-none
           opacity-0
+          -z-10
         "
         style={{
           // Make truly invisible but still focusable

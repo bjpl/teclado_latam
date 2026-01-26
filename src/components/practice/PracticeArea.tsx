@@ -481,7 +481,7 @@ export function PracticeArea({
       {/* Text Display (only show when session exists) */}
       {session && (
         <div
-          className="relative cursor-text"
+          className="relative cursor-text z-0 isolate"
           onClick={() => inputRef.current?.focus()}
         >
           <TextDisplay
