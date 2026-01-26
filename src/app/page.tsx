@@ -224,10 +224,10 @@ function HomeContent() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      {/* Header */}
+      {/* Header - fixed positioning */}
       <Header />
 
-      {/* Main Content - positioned relative with z-index below header to ensure proper stacking */}
+      {/* Main Content - pt-20 accounts for fixed header height */}
       <main
         ref={mainRef}
         className="
@@ -235,10 +235,8 @@ function HomeContent() {
           flex flex-col
           items-center
           px-4 sm:px-6 lg:px-8
-          py-6 sm:py-8 lg:py-12
+          pt-20 pb-6 sm:pt-24 sm:pb-8 lg:pt-24 lg:pb-12
           gap-6 lg:gap-8
-          relative
-          z-0
         "
         tabIndex={-1}
       >
@@ -484,7 +482,7 @@ export default function Home() {
     <Suspense fallback={
       <div className="flex flex-col min-h-screen bg-background">
         <Header />
-        <main className="flex-1 flex items-center justify-center relative z-0">
+        <main className="flex-1 flex items-center justify-center pt-20">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-primary" />
         </main>
         <Footer />

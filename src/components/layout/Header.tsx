@@ -39,14 +39,14 @@ export function Header({ className = '' }: HeaderProps) {
         flex items-center justify-between
         border-b border-border-muted
         bg-surface-0
-        sticky
+        fixed
         top-0
-        z-[100]
-        relative
+        left-0
+        right-0
+        z-[9999]
         pointer-events-auto
         ${className}
       `}
-      style={{ zIndex: 100 }}
     >
       {/* Logo and Title */}
       <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
