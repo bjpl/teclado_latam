@@ -333,8 +333,8 @@ function HomeContent() {
           </div>
         ) : currentText ? (
           <>
-            {/* Metrics Panel - Top */}
-            {sessionMetrics && (
+            {/* Metrics Panel - Top - ONLY show during active session, NOT when results are showing */}
+            {sessionMetrics && !showResults && (
               <MetricsPanel
                 grossWPM={sessionMetrics.estimatedWPM}
                 netWPM={sessionMetrics.estimatedWPM}

@@ -219,9 +219,33 @@ export function useSessionHistory(): UseSessionHistoryReturn {
 
   /**
    * Clear all session history
+   * Uses direct localStorage clear as backup to ensure data is removed
    */
   const clearHistory = useCallback(() => {
+    // First, update React state
     setSessions([]);
+
+    // Also directly clear localStorage to ensure it's removed
+    // This handles edge cases where state sync might fail
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.removeItem(STORAGE_KEYS.SESSION_HISTORY);
+
+        // Dispatch custom event for same-tab sync (matches useLocalStorage)
+        window.dispatchEvent(new CustomEvent('teclado-storage-sync', {
+          detail: { key: STORAGE_KEYS.SESSION_HISTORY }
+        }));
+
+        // Also dispatch storage event for cross-tab sync
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: STORAGE_KEYS.SESSION_HISTORY,
+          newValue: null,
+          oldValue: null,
+        }));
+      } catch (error) {
+        console.warn('Error clearing session history from localStorage:', error);
+      }
+    }
   }, [setSessions]);
 
   /**
