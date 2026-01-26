@@ -633,6 +633,46 @@ describe('DeadKeyHandler', () => {
         expect(result.deadKeyType).toBeNull();
       }
     });
+
+    it('should NOT treat Shift+Digit2 (quotation mark) as dead key', () => {
+      // Arrange - Shift+2 produces quotation mark on LATAM keyboard
+      const modifiers = createModifiers({ shift: true });
+
+      // Act
+      const result = isDeadKeyCode('Digit2', modifiers, '"');
+
+      // Assert - quotation mark is NOT a dead key
+      expect(result.isDeadKey).toBe(false);
+      expect(result.deadKeyType).toBeNull();
+    });
+
+    it('should NOT treat Digit2 as dead key even if browser reports Dead', () => {
+      // Arrange - Some keyboard configurations may incorrectly report 'Dead'
+      const modifiers = createModifiers({ shift: true });
+
+      // Act - Browser incorrectly reports 'Dead' for Shift+2
+      const result = isDeadKeyCode('Digit2', modifiers, 'Dead');
+
+      // Assert - Should NOT be treated as a dead key
+      // because Digit2 is not a recognized dead key position on LATAM
+      expect(result.isDeadKey).toBe(false);
+      expect(result.deadKeyType).toBeNull();
+    });
+
+    it('should NOT treat unknown key positions as dead keys when browser reports Dead', () => {
+      // Arrange
+      const modifiers = createModifiers();
+      const nonDeadKeyPositions = ['Digit1', 'Digit2', 'Digit3', 'KeyA', 'KeyZ'];
+
+      for (const code of nonDeadKeyPositions) {
+        // Act - Browser reports 'Dead' for a non-dead-key position
+        const result = isDeadKeyCode(code, modifiers, 'Dead');
+
+        // Assert - Should NOT be treated as dead key
+        expect(result.isDeadKey).toBe(false);
+        expect(result.deadKeyType).toBeNull();
+      }
+    });
   });
 
   // ===========================================================================

@@ -358,6 +358,9 @@ export function isDeadKeyCode(
 
   if (key === 'Dead') {
     // Infer type from physical position for LATAM layout
+    // Only recognize known dead key positions - do NOT default to treating
+    // unknown positions as dead keys, as this causes issues with keys like
+    // Shift+2 (quotation mark) which may incorrectly report 'Dead' on some systems
     if (code === 'BracketLeft') {
       if (modifiers.shift) {
         return { isDeadKey: true, deadKeyType: 'dieresis' };
@@ -365,20 +368,22 @@ export function isDeadKeyCode(
       return { isDeadKey: true, deadKeyType: 'acute' };
     }
 
-    if (code === 'BracketRight') {
+    if (code === 'BracketRight' && modifiers.altGr) {
       return { isDeadKey: true, deadKeyType: 'tilde' };
     }
 
-    if (code === 'Quote') {
+    if (code === 'Quote' && modifiers.altGr) {
       return { isDeadKey: true, deadKeyType: 'circumflex' };
     }
 
-    if (code === 'Backslash') {
+    if (code === 'Backslash' && modifiers.altGr) {
       return { isDeadKey: true, deadKeyType: 'grave' };
     }
 
-    // Default to acute for unknown positions (most common in Spanish)
-    return { isDeadKey: true, deadKeyType: 'acute' };
+    // Unknown dead key position - do NOT treat as dead key
+    // This prevents keys like Shift+2 from being incorrectly treated as dead keys
+    // when the browser erroneously reports key='Dead'
+    return { isDeadKey: false, deadKeyType: null };
   }
 
   // ==========================================================================
