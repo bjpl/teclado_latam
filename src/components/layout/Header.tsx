@@ -30,8 +30,14 @@ export interface HeaderProps {
 export function Header({ className = '' }: HeaderProps) {
   const { statistics, isLoaded } = useSessionHistory();
 
+  // Debug: log clicks on header to verify events are reaching it
+  const handleHeaderClick = (e: React.MouseEvent) => {
+    console.log('Header clicked!', e.target);
+  };
+
   return (
     <header
+      onClick={handleHeaderClick}
       className={`
         w-full
         px-4 sm:px-6 lg:px-8
@@ -72,11 +78,15 @@ export function Header({ className = '' }: HeaderProps) {
         </div>
       </Link>
 
-      {/* Actions */}
+      {/* Actions - using native anchor tags with direct href for guaranteed navigation */}
       <nav className="flex items-center gap-2">
         {/* Curriculum Link */}
-        <Link
+        <a
           href="/curriculum"
+          onClick={(e) => {
+            e.preventDefault();
+            window.location.href = '/curriculum';
+          }}
           className="
             flex items-center gap-2
             px-3 py-2
@@ -88,16 +98,21 @@ export function Header({ className = '' }: HeaderProps) {
             focus:outline-none
             focus-visible:ring-2
             focus-visible:ring-accent-primary
+            cursor-pointer
           "
           aria-label="View curriculum"
         >
           <BookOpen className="w-5 h-5" />
           <span className="hidden sm:inline text-sm">Curriculum</span>
-        </Link>
+        </a>
 
         {/* History Link */}
-        <Link
+        <a
           href="/history"
+          onClick={(e) => {
+            e.preventDefault();
+            window.location.href = '/history';
+          }}
           className="
             flex items-center gap-2
             px-3 py-2
@@ -109,6 +124,7 @@ export function Header({ className = '' }: HeaderProps) {
             focus:outline-none
             focus-visible:ring-2
             focus-visible:ring-accent-primary
+            cursor-pointer
           "
           aria-label="View session history"
         >
@@ -120,11 +136,15 @@ export function Header({ className = '' }: HeaderProps) {
               <span className="text-accent-primary font-medium">{statistics.averageWpm} avg</span>
             </span>
           )}
-        </Link>
+        </a>
 
         {/* Settings Link */}
-        <Link
+        <a
           href="/settings"
+          onClick={(e) => {
+            e.preventDefault();
+            window.location.href = '/settings';
+          }}
           className="
             p-2.5
             rounded-lg
@@ -135,11 +155,12 @@ export function Header({ className = '' }: HeaderProps) {
             focus:outline-none
             focus-visible:ring-2
             focus-visible:ring-accent-primary
+            cursor-pointer
           "
           aria-label="Open settings"
         >
           <Settings className="w-5 h-5" />
-        </Link>
+        </a>
       </nav>
     </header>
   );
