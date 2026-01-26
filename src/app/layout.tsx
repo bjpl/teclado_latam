@@ -68,16 +68,29 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  var theme = localStorage.getItem('teclado-theme');
-                  if (theme) {
-                    theme = JSON.parse(theme);
+                  var theme = null;
+                  // Try settings storage first (where theme is actually saved)
+                  var settings = localStorage.getItem('teclado-latam-settings');
+                  if (settings) {
+                    var parsed = JSON.parse(settings);
+                    if (parsed && parsed.theme) {
+                      theme = parsed.theme;
+                    }
                   }
+                  // Fall back to standalone theme key
+                  if (!theme) {
+                    var standaloneTheme = localStorage.getItem('teclado-theme');
+                    if (standaloneTheme) {
+                      theme = JSON.parse(standaloneTheme);
+                    }
+                  }
+                  // Apply theme
                   if (theme === 'dark') {
                     document.documentElement.classList.add('dark');
                   } else if (theme === 'light') {
                     document.documentElement.classList.remove('dark');
                   } else {
-                    // System preference
+                    // System preference (theme is 'system' or not set)
                     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
                       document.documentElement.classList.add('dark');
                     }

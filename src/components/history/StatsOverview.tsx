@@ -128,7 +128,7 @@ export function StatsOverview({ stats, className = '' }: StatsOverviewProps) {
           label="Total Practice"
           value={formatDuration(stats.totalTime)}
           sublabel={`${stats.totalSessions} sessions`}
-          colorClass="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+          colorClass="bg-accent-primary/10 text-accent-primary"
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -139,7 +139,7 @@ export function StatsOverview({ stats, className = '' }: StatsOverviewProps) {
           label="Average WPM"
           value={stats.averageWpm.toFixed(1)}
           sublabel="words per minute"
-          colorClass="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+          colorClass="bg-accent-success/10 text-accent-success"
           trend={stats.wpmTrend}
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,7 +151,7 @@ export function StatsOverview({ stats, className = '' }: StatsOverviewProps) {
           label="Average Accuracy"
           value={`${stats.averageAccuracy.toFixed(1)}%`}
           sublabel="overall accuracy"
-          colorClass="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+          colorClass="bg-accent-secondary/10 text-accent-secondary"
           trend={stats.accuracyTrend}
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -163,7 +163,7 @@ export function StatsOverview({ stats, className = '' }: StatsOverviewProps) {
           label="Best WPM"
           value={stats.bestWpm.toFixed(1)}
           sublabel="personal record"
-          colorClass="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400"
+          colorClass="bg-accent-warning/10 text-accent-warning"
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
@@ -177,7 +177,7 @@ export function StatsOverview({ stats, className = '' }: StatsOverviewProps) {
         <StatCard
           label="Characters Typed"
           value={formatNumber(stats.totalCharacters)}
-          colorClass="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400"
+          colorClass="bg-accent-primary/10 text-accent-primary"
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -188,7 +188,7 @@ export function StatsOverview({ stats, className = '' }: StatsOverviewProps) {
           label="Total Sessions"
           value={stats.totalSessions}
           sublabel="completed"
-          colorClass="bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400"
+          colorClass="bg-accent-success/10 text-accent-success"
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -199,7 +199,7 @@ export function StatsOverview({ stats, className = '' }: StatsOverviewProps) {
           label="Best Accuracy"
           value={`${stats.bestAccuracy.toFixed(1)}%`}
           sublabel="personal record"
-          colorClass="bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400"
+          colorClass="bg-accent-secondary/10 text-accent-secondary"
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -211,7 +211,7 @@ export function StatsOverview({ stats, className = '' }: StatsOverviewProps) {
             label="Focus On"
             value={stats.mostProblematicChars.slice(0, 3).map(c => c === ' ' ? '\u2423' : c).join(', ')}
             sublabel="most missed chars"
-            colorClass="bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
+            colorClass="bg-accent-error/10 text-accent-error"
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
