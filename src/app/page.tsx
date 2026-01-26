@@ -135,12 +135,15 @@ function HomeContent() {
   // ==========================================================================
 
   const handleMetricsUpdate = useCallback((metrics: SessionMetrics) => {
+    // Don't update metrics if results modal is showing (preserves final metrics)
+    if (showResults) return;
+
     setSessionMetrics(metrics);
     // Track when session actually starts (first keystroke)
     if (metrics.elapsedTime > 0 && !sessionStartTime) {
       setSessionStartTime(Date.now() - metrics.elapsedTime);
     }
-  }, [sessionStartTime]);
+  }, [sessionStartTime, showResults]);
 
   const handleSessionComplete = useCallback((session: SessionState, finalMetrics: SessionMetrics) => {
     setCompletedSession(session);
