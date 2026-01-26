@@ -15,7 +15,8 @@
 
 'use client';
 
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { PracticeArea, TextSelector, type SessionMetrics } from '@/components/practice';
@@ -23,20 +24,23 @@ import { VirtualKeyboard } from '@/components/keyboard';
 import { MetricsPanel } from '@/components/metrics';
 import { Modal } from '@/components/ui';
 import { useSessionHistory, useCustomTexts } from '@/hooks';
+import { LESSONS_BY_ID } from '@/lib/curriculum';
 import type { SessionState, ModifierState } from '@/lib/typing-engine/types';
 
 // =============================================================================
 // Component
 // =============================================================================
 
-export default function Home() {
+function HomeContent() {
   // Hooks
+  const searchParams = useSearchParams();
   const { addSession, statistics, bestSession } = useSessionHistory();
   const { texts: savedTexts, addText, deleteText, updateLastUsed } = useCustomTexts();
 
   // State
   const [currentText, setCurrentText] = useState<string | null>(null);
   const [showTextSelector, setShowTextSelector] = useState(true);
+  const [currentLessonName, setCurrentLessonName] = useState<string | null>(null);
   const [sessionMetrics, setSessionMetrics] = useState<SessionMetrics | null>(null);
   const [completedSession, setCompletedSession] = useState<SessionState | null>(null);
   const [showResults, setShowResults] = useState(false);
@@ -55,6 +59,26 @@ export default function Home() {
 
   // Track personal best WPM for comparison
   const previousBestWpm = useMemo(() => bestSession?.wpm.netWPM ?? 0, [bestSession]);
+
+  // ==========================================================================
+  // Handle lessonId from URL (curriculum integration)
+  // ==========================================================================
+
+  useEffect(() => {
+    const lessonId = searchParams.get('lessonId');
+    if (lessonId) {
+      const lesson = LESSONS_BY_ID[lessonId];
+      if (lesson && lesson.exercises.length > 0) {
+        // Get the first exercise text from the lesson
+        const firstExercise = lesson.exercises[0];
+        setCurrentText(firstExercise.text);
+        setCurrentLessonName(lesson.name);
+        setShowTextSelector(false);
+        setSessionMetrics(null);
+        setSessionStartTime(null);
+      }
+    }
+  }, [searchParams]);
 
   // ==========================================================================
   // Key Event Tracking for Virtual Keyboard
@@ -184,9 +208,14 @@ export default function Home() {
   const handleChangeText = useCallback(() => {
     setShowTextSelector(true);
     setCurrentText(null);
+    setCurrentLessonName(null);
     setSessionMetrics(null);
     setCompletedSession(null);
     setSessionStartTime(null);
+    // Clear URL params when changing text
+    if (typeof window !== 'undefined') {
+      window.history.replaceState({}, '', '/');
+    }
   }, []);
 
   // ==========================================================================
@@ -245,11 +274,16 @@ export default function Home() {
               />
             )}
 
-            {/* Change Text Button */}
-            <div className="w-full max-w-4xl flex justify-end">
+            {/* Lesson Name and Change Text Button */}
+            <div className="w-full max-w-4xl flex justify-between items-center">
+              {currentLessonName && (
+                <span className="text-sm text-foreground/60">
+                  Leccion: <span className="font-medium text-foreground">{currentLessonName}</span>
+                </span>
+              )}
               <button
                 onClick={handleChangeText}
-                className="text-sm text-foreground/60 hover:text-foreground transition-colors"
+                className="text-sm text-foreground/60 hover:text-foreground transition-colors ml-auto"
               >
                 Change Text
               </button>
@@ -439,5 +473,22 @@ export default function Home() {
         )}
       </Modal>
     </div>
+  );
+}
+
+// Wrap in Suspense for useSearchParams
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col min-h-screen bg-background">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent-primary" />
+        </main>
+        <Footer />
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }
