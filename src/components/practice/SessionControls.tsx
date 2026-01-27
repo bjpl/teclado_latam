@@ -276,22 +276,21 @@ function SessionControlsComponent({
     </div>
   );
 
-  // Render session controls (when ready or active)
+  // Render session controls (when active, paused, or completed - NOT when ready)
+  // In 'ready' state, typing auto-starts when user clicks and types, so no buttons needed
   const renderSessionControls = () => {
     const isActive = status === 'active';
     const isPaused = status === 'paused';
     const isCompleted = status === 'completed';
 
+    // Don't show any controls in 'ready' state - typing auto-starts
+    if (status === 'ready') {
+      return null;
+    }
+
     return (
       <div className="flex flex-wrap items-center gap-3">
-        {/* Start/Pause/Resume button */}
-        {status === 'ready' && (
-          <ActionButton onClick={onStart} disabled={disabled} variant="primary">
-            <Play size={18} />
-            Start Typing
-          </ActionButton>
-        )}
-
+        {/* Pause button (during active typing) */}
         {isActive && (
           <ActionButton onClick={onPause} disabled={disabled} variant="secondary">
             <Pause size={18} />
@@ -299,6 +298,7 @@ function SessionControlsComponent({
           </ActionButton>
         )}
 
+        {/* Resume button (when paused) */}
         {isPaused && (
           <ActionButton onClick={onResume} disabled={disabled} variant="primary">
             <Play size={18} />
@@ -306,11 +306,8 @@ function SessionControlsComponent({
           </ActionButton>
         )}
 
-        {/* Reset button */}
-        {(status === 'ready' ||
-          isActive ||
-          isPaused ||
-          isCompleted) && (
+        {/* Reset button (during active session or when paused) */}
+        {(isActive || isPaused) && (
           <ActionButton onClick={onReset} disabled={disabled} variant="danger">
             <RotateCcw size={18} />
             Reset
@@ -318,24 +315,22 @@ function SessionControlsComponent({
         )}
 
         {/* Status indicator */}
-        <span
-          className={`
-            px-3
-            py-1
-            text-sm
-            font-medium
-            rounded-full
-            ${isActive ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : ''}
-            ${isPaused ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300' : ''}
-            ${isCompleted ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' : ''}
-            ${status === 'ready' ? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' : ''}
-          `}
-        >
-          {isActive && 'Typing...'}
-          {isPaused && 'Paused'}
-          {isCompleted && 'Completed!'}
-          {status === 'ready' && 'Ready'}
-        </span>
+        {(isActive || isPaused) && (
+          <span
+            className={`
+              px-3
+              py-1
+              text-sm
+              font-medium
+              rounded-full
+              ${isActive ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : ''}
+              ${isPaused ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300' : ''}
+            `}
+          >
+            {isActive && 'Typing...'}
+            {isPaused && 'Paused'}
+          </span>
+        )}
       </div>
     );
   };
