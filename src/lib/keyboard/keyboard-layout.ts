@@ -49,7 +49,7 @@ export const LATAMKeyboardLayout: KeyboardLayout = {
       createKey('Equal', 0, 12, 1.0, '\u00BF', '\u00A1', null, null, 'right-pinky'),
       createKey('Backspace', 0, 13, 2.0, '', '', null, null, 'right-pinky'),
     ],
-    // Row 1: Top letter row (QWERTY)
+    // Row 1: Top letter row (QWERTY) - US ANSI has Backslash at end of this row
     [
       createKey('Tab', 1, 0, 1.5, '\t', '\t', null, null, 'left-pinky'),
       createKey('KeyQ', 1, 1, 1.0, 'q', 'Q', '@', null, 'left-pinky'),
@@ -63,9 +63,10 @@ export const LATAMKeyboardLayout: KeyboardLayout = {
       createKey('KeyO', 1, 9, 1.0, 'o', 'O', null, null, 'right-ring'),
       createKey('KeyP', 1, 10, 1.0, 'p', 'P', null, null, 'right-pinky'),
       createDeadKey('BracketLeft', 1, 11, 1.0, '\u00B4', '\u00A8', '[', null, 'right-pinky', 'acute', 'dieresis'),
-      createKey('BracketRight', 1, 12, 1.0, '+', '*', ']', null, 'right-pinky'),
+      createKey('BracketRight', 1, 12, 1.0, '+', '*', '~', null, 'right-pinky'),
+      createKey('Backslash', 1, 13, 1.5, '}', ']', '`', null, 'right-pinky'),
     ],
-    // Row 2: Home row (ASDF)
+    // Row 2: Home row (ASDF) - US ANSI: no key between Quote and Enter
     [
       createKey('CapsLock', 2, 0, 1.75, '', '', null, null, 'left-pinky'),
       createKey('KeyA', 2, 1, 1.0, 'a', 'A', null, null, 'left-pinky', true),
@@ -79,8 +80,7 @@ export const LATAMKeyboardLayout: KeyboardLayout = {
       createKey('KeyL', 2, 9, 1.0, 'l', 'L', null, null, 'right-ring', true),
       createKey('Semicolon', 2, 10, 1.0, '\u00F1', '\u00D1', null, null, 'right-pinky', true),
       createKey('Quote', 2, 11, 1.0, '{', '[', '^', null, 'right-pinky'),
-      createKey('Backslash', 2, 12, 1.0, '}', ']', '`', null, 'right-pinky'),
-      createKey('Enter', 2, 13, 2.25, '\n', '\n', null, null, 'right-pinky'),
+      createKey('Enter', 2, 12, 2.25, '\n', '\n', null, null, 'right-pinky'),
     ],
     // Row 3: Bottom letter row (ZXCV) - US ANSI layout (no IntlBackslash key)
     [
