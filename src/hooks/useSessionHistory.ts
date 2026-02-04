@@ -225,18 +225,19 @@ export function useSessionHistory(): UseSessionHistoryReturn {
     const storedSessions = readSessions();
     let storedCounter = readCounter();
 
-    // Sanity check: detect obviously corrupted counter
-    // Only reset if counter is impossibly high compared to actual session data.
-    // The key insight: sessions array caps at 100, so counter can legitimately be
-    // much higher than sessions.length. We only reset if the counter is so high
-    // that even if every stored session was 5 seconds, it wouldn't make sense.
-    //
-    // Example corruption: counter=6511, sessions=6, totalTime=18min
-    // This check: if counter > sessions.length * 100, it's definitely corrupted
-    // (would mean 99% of sessions were deleted, which doesn't happen normally)
-    if (storedSessions.length > 0 && storedCounter > storedSessions.length * 100) {
+    // Sanity check: detect corrupted counter using total typing time
+    // Calculate max possible sessions based on total time (minimum 5 sec per session)
+    const totalTimeMs = storedSessions.reduce((sum, s) => sum + s.duration, 0);
+    const MIN_SESSION_MS = 5000; // 5 seconds minimum per session
+    const maxPossibleSessions = Math.max(
+      storedSessions.length,
+      Math.ceil(totalTimeMs / MIN_SESSION_MS) + storedSessions.length
+    );
+
+    if (storedCounter > maxPossibleSessions) {
       console.warn(
-        `[SessionHistory] Corrupted counter detected: ${storedCounter} is way higher than ${storedSessions.length} stored sessions. Resetting to ${storedSessions.length}.`
+        `[SessionHistory] Corrupted counter: ${storedCounter} exceeds max possible ${maxPossibleSessions} ` +
+        `(${storedSessions.length} sessions, ${Math.round(totalTimeMs / 1000)}s total). Resetting.`
       );
       storedCounter = storedSessions.length;
       writeCounter(storedCounter);
