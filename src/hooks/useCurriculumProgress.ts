@@ -12,7 +12,6 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { useLocalStorage } from './useLocalStorage';
 import {
   LESSONS_BY_ID,
   CURRICULUM_MODULES,
@@ -88,19 +87,52 @@ function createInitialProgress(): CurriculumProgress {
  * Hook for managing curriculum progress
  */
 export function useCurriculumProgress(): UseCurriculumProgressReturn {
-  const [storedProgress, setStoredProgress] = useLocalStorage<CurriculumProgress | null>(
-    STORAGE_KEY,
-    null
-  );
   const [isLoading, setIsLoading] = useState(true);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [progress, setProgress] = useState<CurriculumProgress | null>(null);
 
-  // Initialize progress if not exists
+  // Read from localStorage on mount (client-side only)
   useEffect(() => {
-    if (storedProgress === null) {
-      setStoredProgress(createInitialProgress());
+    if (typeof window === 'undefined') {
+      setIsLoading(false);
+      return;
     }
+
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setProgress(parsed);
+      } else {
+        // No saved progress - initialize fresh
+        const initial = createInitialProgress();
+        setProgress(initial);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+      }
+    } catch (error) {
+      console.warn('Error reading curriculum progress:', error);
+      const initial = createInitialProgress();
+      setProgress(initial);
+    }
+
+    setIsHydrated(true);
     setIsLoading(false);
-  }, [storedProgress, setStoredProgress]);
+  }, []);
+
+  // Helper to save progress
+  const saveProgress = (newProgress: CurriculumProgress) => {
+    setProgress(newProgress);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newProgress));
+      } catch (error) {
+        console.warn('Error saving curriculum progress:', error);
+      }
+    }
+  };
+
+  // Alias for compatibility
+  const storedProgress = progress;
 
   // Derive completed lessons set
   const completedLessons = new Set<string>(
@@ -112,17 +144,19 @@ export function useCurriculumProgress(): UseCurriculumProgressReturn {
   );
 
   // Derive lesson scores map
+  // Include all completed lessons, using lastAttempt as fallback for completedAt
   const lessonScores = new Map<string, LessonScore>(
     storedProgress
       ? Object.entries(storedProgress.lessons)
-          .filter(([, progress]) => progress.completed && progress.completedAt)
+          .filter(([, progress]) => progress.completed)
           .map(([id, progress]) => [
             id,
             {
               wpm: progress.bestWPM,
               accuracy: progress.bestAccuracy,
               stars: progress.stars,
-              completedAt: progress.completedAt!,
+              // Use completedAt if available, otherwise fall back to lastAttempt or now
+              completedAt: progress.completedAt || progress.lastAttempt || Date.now(),
             },
           ])
       : []
@@ -189,7 +223,7 @@ export function useCurriculumProgress(): UseCurriculumProgressReturn {
           ? completedLessonsList.reduce((sum, l) => sum + l.bestAccuracy, 0) / lessonsCompleted
           : 0;
 
-      setStoredProgress({
+      saveProgress({
         ...storedProgress,
         lessons: updatedLessons,
         lessonsCompleted,
@@ -198,7 +232,7 @@ export function useCurriculumProgress(): UseCurriculumProgressReturn {
         lastPracticeAt: Date.now(),
       });
     },
-    [storedProgress, setStoredProgress]
+    [storedProgress, saveProgress]
   );
 
   /**
@@ -244,8 +278,8 @@ export function useCurriculumProgress(): UseCurriculumProgressReturn {
    * Reset all progress
    */
   const resetProgress = useCallback(() => {
-    setStoredProgress(createInitialProgress());
-  }, [setStoredProgress]);
+    saveProgress(createInitialProgress());
+  }, [saveProgress]);
 
   return {
     progress: storedProgress,

@@ -108,6 +108,7 @@ export function isLessonUnlocked(
 
 /**
  * Get the next recommended lesson based on progress
+ * This returns the first uncompleted lesson in the recommended path
  */
 export function getNextLesson(progress: CurriculumProgress): Lesson | null {
   for (const lessonId of RECOMMENDED_PATH) {
@@ -122,6 +123,39 @@ export function getNextLesson(progress: CurriculumProgress): Lesson | null {
     }
   }
 
+  return null;
+}
+
+/**
+ * Get the next lesson after the current lesson in the recommended path
+ * This respects the user's position in the curriculum
+ */
+export function getNextLessonAfter(
+  currentLessonId: string,
+  progress: CurriculumProgress
+): Lesson | null {
+  const currentIndex = RECOMMENDED_PATH.indexOf(currentLessonId);
+
+  // If current lesson not found in path, fall back to getNextLesson
+  if (currentIndex === -1) {
+    return getNextLesson(progress);
+  }
+
+  // Look for the next uncompleted lesson AFTER the current one
+  for (let i = currentIndex + 1; i < RECOMMENDED_PATH.length; i++) {
+    const lessonId = RECOMMENDED_PATH[i];
+    const lessonProgress = progress.lessons[lessonId];
+
+    // Skip completed lessons
+    if (lessonProgress?.completed) continue;
+
+    // Check if this lesson is unlocked
+    if (isLessonUnlocked(lessonId, progress)) {
+      return LESSONS_BY_ID[lessonId];
+    }
+  }
+
+  // If no lessons after current, return null (curriculum completed from this point)
   return null;
 }
 

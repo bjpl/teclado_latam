@@ -68,6 +68,10 @@ export interface UseSessionHistoryReturn {
   recentSessions: SessionRecord[];
   bestSession: SessionRecord | null;
   statistics: SessionStatistics;
+  /** Total sessions ever completed (persisted counter, never trimmed) */
+  totalSessionsEver: number;
+  /** The current session number (before calling addSession) - use for display */
+  currentSessionNumber: number;
 }
 
 // =============================================================================
@@ -75,6 +79,7 @@ export interface UseSessionHistoryReturn {
 // =============================================================================
 
 const STORAGE_KEY = 'teclado-session-history';
+const SESSION_COUNTER_KEY = 'teclado-total-sessions-count';
 const MAX_SESSIONS = 100;
 
 // =============================================================================
@@ -123,6 +128,37 @@ function writeToStorage(sessions: SessionRecord[]): void {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
   } catch (error) {
     console.warn('Error writing sessions to localStorage:', error);
+  }
+}
+
+/**
+ * Read the total session counter from localStorage
+ * This tracks ALL sessions ever completed, not just those stored
+ */
+function readSessionCounter(): number {
+  if (!isBrowser()) return 0;
+
+  try {
+    const raw = localStorage.getItem(SESSION_COUNTER_KEY);
+    if (!raw) return 0;
+
+    const parsed = parseInt(raw, 10);
+    return isNaN(parsed) ? 0 : parsed;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Write the total session counter to localStorage
+ */
+function writeSessionCounter(count: number): void {
+  if (!isBrowser()) return;
+
+  try {
+    localStorage.setItem(SESSION_COUNTER_KEY, String(count));
+  } catch (error) {
+    console.warn('Error writing session counter:', error);
   }
 }
 
@@ -219,16 +255,28 @@ export function useSessionHistory(): UseSessionHistoryReturn {
   const [sessions, setSessions] = useState<SessionRecord[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // Simple counter state - will be synced from localStorage
+  const [totalSessionsEver, setTotalSessionsEver] = useState(0);
+
   // Ref to track if we've done initial load
   const initialLoadDone = useRef(false);
 
   // Load from localStorage on mount (client-side only)
   useEffect(() => {
     if (initialLoadDone.current) return;
+    if (typeof window === 'undefined') return;
+
     initialLoadDone.current = true;
 
-    const stored = readFromStorage();
-    setSessions(stored);
+    // Read sessions
+    const storedSessions = readFromStorage();
+    setSessions(storedSessions);
+
+    // Read counter - CRITICAL: read fresh from localStorage every time
+    const counter = readSessionCounter();
+    console.log('[useSessionHistory] Loaded counter from localStorage:', counter);
+    setTotalSessionsEver(counter);
+
     setIsLoaded(true);
   }, []);
 
@@ -250,6 +298,13 @@ export function useSessionHistory(): UseSessionHistoryReturn {
       return updated.length > MAX_SESSIONS ? updated.slice(0, MAX_SESSIONS) : updated;
     });
 
+    // Increment counter: read FRESH from localStorage to avoid stale values
+    const currentCount = readSessionCounter();
+    const newCount = currentCount + 1;
+    console.log('[useSessionHistory] addSession - current:', currentCount, 'new:', newCount);
+    writeSessionCounter(newCount);
+    setTotalSessionsEver(newCount);
+
     return id;
   }, []);
 
@@ -264,12 +319,17 @@ export function useSessionHistory(): UseSessionHistoryReturn {
    * Clear all session history
    */
   const clearHistory = useCallback(() => {
+    console.log('[useSessionHistory] clearHistory called - resetting everything');
+
     // Clear state
     setSessions([]);
+    setTotalSessionsEver(0);
 
     // Force clear localStorage directly
     if (isBrowser()) {
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(SESSION_COUNTER_KEY);
+      console.log('[useSessionHistory] localStorage cleared');
     }
   }, []);
 
@@ -327,6 +387,10 @@ export function useSessionHistory(): UseSessionHistoryReturn {
 
   const statistics = useMemo(() => calculateStats(sessions), [sessions]);
 
+  // Current session number is the next session to be added
+  // Use this for displaying "Session #N" before addSession is called
+  const currentSessionNumber = totalSessionsEver + 1;
+
   return {
     sessions,
     isLoaded,
@@ -340,5 +404,7 @@ export function useSessionHistory(): UseSessionHistoryReturn {
     recentSessions,
     bestSession,
     statistics,
+    totalSessionsEver,
+    currentSessionNumber,
   };
 }

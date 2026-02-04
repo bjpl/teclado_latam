@@ -24,7 +24,7 @@ import { VirtualKeyboard } from '@/components/keyboard';
 import { MetricsPanel } from '@/components/metrics';
 import { Modal } from '@/components/ui';
 import { useSessionHistory, useCustomTexts, useCurriculumProgress } from '@/hooks';
-import { LESSONS_BY_ID, getNextLesson, type Lesson } from '@/lib/curriculum';
+import { LESSONS_BY_ID, getNextLessonAfter, type Lesson } from '@/lib/curriculum';
 import type { SessionState, ModifierState } from '@/lib/typing-engine/types';
 
 // =============================================================================
@@ -35,7 +35,7 @@ function HomeContent() {
   // Hooks
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { addSession, statistics, bestSession } = useSessionHistory();
+  const { addSession, statistics, bestSession, totalSessionsEver } = useSessionHistory();
   const { texts: savedTexts, addText, deleteText, updateLastUsed } = useCustomTexts();
   const { markLessonComplete, progress } = useCurriculumProgress();
 
@@ -206,7 +206,8 @@ function HomeContent() {
             },
           },
         };
-        const next = getNextLesson(updatedProgress);
+        // Use getNextLessonAfter to continue from current position in curriculum
+        const next = getNextLessonAfter(currentLessonId, updatedProgress);
         setNextLesson(next);
       }
     }
@@ -500,9 +501,9 @@ function HomeContent() {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-foreground/60">Total Sessions</span>
+                    <span className="text-foreground/60">Session</span>
                     <span className="font-medium text-foreground/70">
-                      {statistics.totalSessions + 1}
+                      #{totalSessionsEver}
                     </span>
                   </div>
                 </div>

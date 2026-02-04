@@ -96,7 +96,8 @@ export function LessonItem({
   onStart,
   className = '',
 }: LessonItemProps) {
-  const isCompleted = score && score.stars > 0;
+  // A lesson is completed if we have a score (completedAt timestamp exists)
+  const isCompleted = !!score;
 
   return (
     <div
