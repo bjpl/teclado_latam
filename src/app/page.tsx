@@ -352,7 +352,8 @@ function HomeContent() {
             />
           </div>
         ) : currentText ? (
-          <>
+          /* Practice Mode - Viewport-constrained layout ensures keyboard always visible */
+          <div className="flex flex-col w-full max-w-4xl flex-1 min-h-0 gap-4">
             {/* Metrics Panel - Top - ONLY show during active session, NOT when results/transitioning */}
             {sessionMetrics && !showResults && !isTransitioning && (
               <MetricsPanel
@@ -362,12 +363,12 @@ function HomeContent() {
                 errorCount={sessionMetrics.errors}
                 startTime={sessionMetrics.elapsedTime > 0 ? Date.now() - sessionMetrics.elapsedTime : null}
                 layout="horizontal"
-                className="w-full max-w-4xl animate-fade-in"
+                className="w-full animate-fade-in flex-shrink-0"
               />
             )}
 
             {/* Lesson Name and Change Text Button */}
-            <div className="w-full max-w-4xl flex justify-between items-center">
+            <div className="w-full flex justify-between items-center flex-shrink-0">
               {currentLessonName && (
                 <span className="text-sm text-foreground/60">
                   Leccion: <span className="font-medium text-foreground">{currentLessonName}</span>
@@ -381,8 +382,8 @@ function HomeContent() {
               </button>
             </div>
 
-            {/* Practice Area */}
-            <div className="w-full max-w-4xl animate-slide-up">
+            {/* Practice Area - Takes remaining space, scrolls internally */}
+            <div className="flex-1 min-h-0 animate-slide-up">
               <PracticeArea
                 key={practiceKey}
                 initialText={currentText}
@@ -391,8 +392,8 @@ function HomeContent() {
               />
             </div>
 
-            {/* Virtual Keyboard */}
-            <div className="w-full max-w-4xl animate-slide-up" style={{ animationDelay: '100ms' }}>
+            {/* Virtual Keyboard - Always visible at bottom */}
+            <div className="flex-shrink-0 animate-slide-up" style={{ animationDelay: '100ms' }}>
               <VirtualKeyboard
                 pressedKeys={pressedKeys}
                 modifierState={modifierState}
@@ -401,7 +402,7 @@ function HomeContent() {
                 size="standard"
               />
             </div>
-          </>
+          </div>
         ) : null}
       </main>
 

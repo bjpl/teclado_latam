@@ -223,10 +223,29 @@ export function useSessionHistory(): UseSessionHistoryReturn {
     if (typeof window === 'undefined') return;
 
     const storedSessions = readSessions();
-    const storedCounter = readCounter();
+    let storedCounter = readCounter();
 
-    // Sync counter with sessions if needed (recovery mechanism)
-    // Counter should always be >= sessions.length
+    // Calculate total time from stored sessions for sanity check
+    const totalTimeMs = storedSessions.reduce((sum, s) => sum + s.duration, 0);
+
+    // Sanity check: detect corrupted counter
+    // If average time per session (totalTime / counter) is less than 10 seconds,
+    // the counter is likely corrupted. Reset it to sessions.length.
+    // Example: 18min (1,080,000ms) / 6511 sessions = 166ms/session = impossible
+    if (storedCounter > storedSessions.length) {
+      const avgTimePerSession = totalTimeMs / storedCounter;
+      const MIN_REASONABLE_SESSION_TIME = 10000; // 10 seconds minimum
+
+      if (avgTimePerSession < MIN_REASONABLE_SESSION_TIME) {
+        console.warn(
+          `[SessionHistory] Corrupted counter detected: ${storedCounter} sessions but only ${Math.round(totalTimeMs / 1000)}s total time (${Math.round(avgTimePerSession)}ms avg). Resetting to ${storedSessions.length}.`
+        );
+        storedCounter = storedSessions.length;
+        writeCounter(storedCounter);
+      }
+    }
+
+    // Sync counter with sessions if needed (counter should be >= sessions.length)
     const syncedCounter = Math.max(storedCounter, storedSessions.length);
     if (syncedCounter !== storedCounter) {
       writeCounter(syncedCounter);

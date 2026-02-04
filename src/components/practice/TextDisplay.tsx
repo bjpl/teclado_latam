@@ -225,8 +225,8 @@ function TextDisplayComponent({
         text-display
         relative
         w-full
-        min-h-[200px]
-        max-h-[400px]
+        h-full
+        min-h-[120px]
         overflow-y-auto
         p-4
         bg-gray-50

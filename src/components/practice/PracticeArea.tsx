@@ -453,7 +453,7 @@ export function PracticeArea({
   // ==========================================================================
 
   return (
-    <div className="practice-area w-full max-w-4xl mx-auto space-y-6">
+    <div className="practice-area w-full max-w-4xl mx-auto h-full flex flex-col gap-4">
       {/* Session Controls */}
       <SessionControls
         status={status}
@@ -462,11 +462,12 @@ export function PracticeArea({
         onResume={handleResume}
         onReset={handleReset}
         onLoadText={handleLoadText}
+        className="flex-shrink-0"
       />
 
       {/* Real-time typing indicator */}
       {session && session.isStarted && !session.isPaused && lastTyped && (
-        <div className="flex items-center justify-center gap-3 py-2">
+        <div className="flex items-center justify-center gap-3 py-2 flex-shrink-0">
           <span className="text-sm text-gray-500 dark:text-gray-400">Last typed:</span>
           <span
             className={`
@@ -488,10 +489,10 @@ export function PracticeArea({
         </div>
       )}
 
-      {/* Text Display (only show when session exists) */}
+      {/* Text Display (only show when session exists) - flex-1 to fill remaining space */}
       {session && (
         <div
-          className="relative cursor-text z-0 isolate"
+          className="relative cursor-text z-0 isolate flex-1 min-h-0 flex flex-col"
           onClick={() => inputRef.current?.focus()}
         >
           <TextDisplay
@@ -590,6 +591,7 @@ export function PracticeArea({
             dark:border-green-800
             rounded-lg
             text-center
+            flex-shrink-0
           "
         >
           <h3 className="text-xl font-semibold text-green-700 dark:text-green-400 mb-2">

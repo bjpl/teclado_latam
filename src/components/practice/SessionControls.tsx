@@ -35,6 +35,8 @@ export interface SessionControlsProps {
   onLoadText?: (text: string) => void;
   /** Whether controls are disabled */
   disabled?: boolean;
+  /** Additional CSS classes */
+  className?: string;
 }
 
 // =============================================================================
@@ -128,6 +130,7 @@ function SessionControlsComponent({
   onReset,
   onLoadText,
   disabled = false,
+  className = '',
 }: SessionControlsProps) {
   const [customText, setCustomText] = useState('');
   const [showSamples, setShowSamples] = useState(false);
@@ -336,7 +339,7 @@ function SessionControlsComponent({
   };
 
   return (
-    <div className="session-controls w-full space-y-4">
+    <div className={`session-controls w-full space-y-4 ${className}`}>
       {status === 'idle' ? renderTextInput() : renderSessionControls()}
 
       {/* Hidden instructions for screen readers */}
