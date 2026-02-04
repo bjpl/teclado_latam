@@ -199,6 +199,7 @@ export function PracticeArea({
   // Refs
   const inputRef = useRef<TextInputRef>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const completionHandledRef = useRef<boolean>(false);
 
   // Derived state
   const status = getSessionStatus(session);
@@ -230,8 +231,18 @@ export function PracticeArea({
   // Session Complete Handler
   // ==========================================================================
 
+  // Reset completion flag when session changes or is no longer complete
   useEffect(() => {
-    if (session?.isComplete && onComplete) {
+    if (!session?.isComplete) {
+      completionHandledRef.current = false;
+    }
+  }, [session?.isComplete]);
+
+  useEffect(() => {
+    // Guard: only fire once per session completion
+    if (session?.isComplete && onComplete && !completionHandledRef.current) {
+      completionHandledRef.current = true; // Mark as handled BEFORE calling
+
       // Calculate final metrics and pass directly to onComplete for reliability
       const finalMetrics = calculateMetrics(session);
       // Also update metrics state for any components that depend on it

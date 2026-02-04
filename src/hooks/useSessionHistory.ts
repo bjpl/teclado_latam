@@ -256,12 +256,29 @@ export function useSessionHistory(): UseSessionHistoryReturn {
 
   // Add a new session
   const addSession = useCallback((session: Omit<SessionRecord, 'id'>): string => {
-    const id = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const newSession: SessionRecord = { ...session, id };
-
     // Read fresh from localStorage to avoid stale closure issues
     const currentSessions = readSessions();
     const currentCounter = readCounter();
+
+    // Defense-in-depth: Detect and reject duplicate rapid-fire additions
+    // If the most recent session has identical text and was added within 2 seconds,
+    // it's almost certainly a duplicate call from React re-renders
+    const mostRecent = currentSessions[0];
+    if (mostRecent) {
+      const timeSinceLastSession = Date.now() - mostRecent.endTime;
+      const sameText = mostRecent.text === session.text;
+      const rapidFire = timeSinceLastSession < 2000; // 2 seconds threshold
+
+      if (sameText && rapidFire) {
+        console.warn(
+          `[SessionHistory] Rejected duplicate session: same text added ${timeSinceLastSession}ms ago`
+        );
+        return mostRecent.id; // Return existing ID, don't add duplicate
+      }
+    }
+
+    const id = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const newSession: SessionRecord = { ...session, id };
 
     // Add new session at the beginning, trim if over limit
     const updatedSessions = [newSession, ...currentSessions].slice(0, MAX_STORED_SESSIONS);
