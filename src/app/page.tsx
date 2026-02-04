@@ -461,7 +461,7 @@ function HomeContent() {
             </div>
 
             {/* Comparison to Personal Stats */}
-            {statistics.totalSessions > 0 && (
+            {totalSessionsEver > 0 && (
               <div className="p-4 bg-surface-1 rounded-lg space-y-2">
                 <h4 className="text-sm font-medium text-foreground/70 uppercase tracking-wider">
                   Compared to Your Stats

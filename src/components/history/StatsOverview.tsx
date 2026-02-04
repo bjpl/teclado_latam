@@ -9,8 +9,10 @@ import type { SessionStatistics } from '@/hooks';
 import { cn } from '@/lib/utils/cn';
 
 export interface StatsOverviewProps {
-  /** Aggregated statistics */
+  /** Aggregated statistics from stored sessions */
   stats: SessionStatistics;
+  /** Total sessions ever completed (persisted counter, not capped) */
+  totalSessionsEver: number;
   /** Additional CSS classes */
   className?: string;
 }
@@ -95,13 +97,14 @@ function StatCard({
  *
  * Features:
  * - Total practice time
- * - Total sessions
+ * - Total sessions (using totalSessionsEver for accurate count)
  * - Average WPM and accuracy
  * - Best WPM ever achieved
  * - WPM and accuracy trends
  */
-export function StatsOverview({ stats, className = '' }: StatsOverviewProps) {
-  if (stats.totalSessions === 0) {
+export function StatsOverview({ stats, totalSessionsEver, className = '' }: StatsOverviewProps) {
+  // Show empty state if no sessions ever completed
+  if (totalSessionsEver === 0) {
     return (
       <div
         className={cn(
@@ -127,7 +130,7 @@ export function StatsOverview({ stats, className = '' }: StatsOverviewProps) {
         <StatCard
           label="Total Practice"
           value={formatDuration(stats.totalTime)}
-          sublabel={`${stats.totalSessions} sessions`}
+          sublabel={`${totalSessionsEver} sessions`}
           colorClass="bg-accent-primary/10 text-accent-primary"
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -186,7 +189,7 @@ export function StatsOverview({ stats, className = '' }: StatsOverviewProps) {
         />
         <StatCard
           label="Total Sessions"
-          value={stats.totalSessions}
+          value={totalSessionsEver}
           sublabel="completed"
           colorClass="bg-accent-success/10 text-accent-success"
           icon={

@@ -36,6 +36,7 @@ export default function HistoryPage() {
     clearHistory,
     filterSessions,
     statistics,
+    totalSessionsEver,
   } = useSessionHistory();
 
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -106,7 +107,7 @@ export default function HistoryPage() {
           <h2 className="text-lg font-semibold text-foreground mb-4">
             Your Statistics
           </h2>
-          <StatsOverview stats={statistics} />
+          <StatsOverview stats={statistics} totalSessionsEver={totalSessionsEver} />
         </section>
 
         {/* Progress Chart */}

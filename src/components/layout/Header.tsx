@@ -28,7 +28,7 @@ export interface HeaderProps {
  * Uses Next.js Link components for reliable navigation.
  */
 export function Header({ className = '' }: HeaderProps) {
-  const { statistics, isLoaded } = useSessionHistory();
+  const { statistics, isLoaded, totalSessionsEver } = useSessionHistory();
 
   return (
     <header
@@ -123,9 +123,9 @@ export function Header({ className = '' }: HeaderProps) {
           aria-label="View session history"
         >
           <History className="w-5 h-5" />
-          {isLoaded && statistics.totalSessions > 0 && (
+          {isLoaded && totalSessionsEver > 0 && (
             <span className="hidden sm:flex items-center gap-2 text-sm">
-              <span className="text-foreground/50">{statistics.totalSessions} sessions</span>
+              <span className="text-foreground/50">{totalSessionsEver} sessions</span>
               <span className="text-foreground/30">|</span>
               <span className="text-accent-primary font-medium">{Math.round(statistics.averageWpm)} WPM</span>
             </span>
