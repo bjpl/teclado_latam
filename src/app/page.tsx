@@ -239,10 +239,14 @@ function HomeContent() {
   // Handle starting the next lesson
   const handleNextLesson = useCallback(() => {
     if (nextLesson && nextLesson.exercises.length > 0) {
+      // Capture lesson data before clearing state
+      const lesson = nextLesson;
+      const firstExercise = lesson.exercises[0];
+
       // Start transition to prevent flashing
       setIsTransitioning(true);
 
-      // Batch all state updates
+      // Close results modal and reset session state
       setShowResults(false);
       setCompletedSession(null);
       setSessionStartTime(null);
@@ -250,11 +254,13 @@ function HomeContent() {
       setSessionMetrics(null);
       finalMetricsRef.current = null;
 
+      // Ensure we're in practice mode, not text selector
+      setShowTextSelector(false);
+
       // Set up the next lesson
-      const firstExercise = nextLesson.exercises[0];
       setCurrentText(firstExercise.text);
-      setCurrentLessonId(nextLesson.id);
-      setCurrentLessonName(nextLesson.name);
+      setCurrentLessonId(lesson.id);
+      setCurrentLessonName(lesson.name);
       setNextLesson(null);
 
       // Increment key to force PracticeArea re-mount for fresh session
@@ -262,7 +268,7 @@ function HomeContent() {
 
       // Update URL without triggering navigation
       if (typeof window !== 'undefined') {
-        window.history.replaceState({}, '', `/?lessonId=${encodeURIComponent(nextLesson.id)}`);
+        window.history.replaceState({}, '', `/?lessonId=${encodeURIComponent(lesson.id)}`);
       }
 
       // End transition after a brief delay to allow re-mount
